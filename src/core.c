@@ -170,6 +170,10 @@ void laik_finalize(Laik_Instance* inst)
             laik_log_append("  summary: ");
             laik_log_SwitchStat(ss);
         }
+        Laik_CommMatrix* cm = laik_top_CommMatrix_from_SwitchStat(ss);
+        laik_log_CommMatrix(cm);
+        
+        // free(cm);
         free(ss);
 
         laik_log_flush(0);

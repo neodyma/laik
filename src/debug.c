@@ -759,6 +759,10 @@ void laik_log_Checksum(char* buf, int count, Laik_Type* t)
     laik_log_append("checksum %f", sum);
 }
 
+void laik_log_CommMatrix(Laik_CommMatrix* cm)
+{
+    laik_log_append("Communication Matrix:");
+}
 
 // logging helpers not just appending
 
