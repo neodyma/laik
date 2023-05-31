@@ -102,6 +102,8 @@ struct _Laik_Instance {
     // External Control Related
     Laik_RepartitionControl* repart_ctrl;
     
+    // Communication Matrix
+    Laik_CommMatrix* comm_matrix;
 };
 
 // allocate space for a new LAIK instance.

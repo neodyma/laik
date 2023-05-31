@@ -117,6 +117,13 @@ Laik_Instance* laik_init(int* argc, char*** argv)
         }
     }
 
+    if(laik_log_begin(2)) {
+        inst->comm_matrix = laik_top_CommMatrix_init(inst);
+        laik_log(2, "CommMatrix initizalized at %p", inst->comm_matrix);
+        laik_log_CommMatrix(inst->comm_matrix);
+        laik_log_flush(0);
+    }
+
     return inst;
 }
 
@@ -170,14 +177,12 @@ void laik_finalize(Laik_Instance* inst)
             laik_log_append("  summary: ");
             laik_log_SwitchStat(ss);
         }
-        Laik_CommMatrix* cm = laik_top_CommMatrix_from_SwitchStat(ss);
-        laik_log_CommMatrix(cm);
-        
-        // free(cm);
-        free(ss);
 
+        free(ss);
         laik_log_flush(0);
     }
+
+    laik_log_CommMatrix(inst->comm_matrix);
 
     laik_close_profiling_file(inst);
     laik_free_profiling(inst);

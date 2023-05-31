@@ -132,6 +132,11 @@ void laik_log_cleanup(Laik_Instance* i)
         fclose(laik_logfile);
 }
 
+Laik_Instance* laik_log_inst()
+{
+    return laik_loginst;
+}
+
 // reset start time for log output
 void laik_log_set_time(struct timeval* t)
 {

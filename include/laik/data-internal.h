@@ -63,7 +63,6 @@ struct _Laik_SwitchStat
     uint64_t elemSendCount, elemRecvCount, elemReduceCount;
     uint64_t byteSendCount, byteRecvCount, byteReduceCount;
     uint64_t initOpCount, reduceOpCount, byteBufCopyCount;
-
 };
 
 Laik_SwitchStat* laik_newSwitchStat(void);

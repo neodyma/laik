@@ -432,6 +432,9 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
     laik_log_append("  %4d [R %d, tid %d] %s",
                     ((char*)a) - ((char*)(as->action)),
                     a->round, a->tid, laik_at_str(a->type));
+    
+    // does this still work on different ranks?
+    Laik_CommMatrix* cm = laik_log_inst()->comm_matrix;
 
     Laik_BackendAction* ba = (Laik_BackendAction*) a;
     switch(a->type) {
@@ -445,16 +448,19 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
         break;
     }
 
-    case LAIK_AT_MapSend:
+    case LAIK_AT_MapSend: {
+        laik_top_CommMatrix_update(cm, cm->inst->mylocationid, ba->rank, ba->count /* * sizeof(datatype)? */);
         laik_log_append(": from mapNo %d, off %d, count %d ==> T%d",
                         ba->fromMapNo,
                         ba->offset,
                         ba->count,
                         ba->rank);
         break;
+    }
 
     case LAIK_AT_BufSend: {
         Laik_A_BufSend* aa = (Laik_A_BufSend*) a;
+        laik_top_CommMatrix_update(cm, cm->inst->mylocationid, aa->to_rank, aa->count /* * sizeof(datatype)? */);
         laik_log_append(": from %p, count %d ==> T%d",
                         aa->buf,
                         aa->count,
@@ -464,6 +470,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_RBufSend: {
         Laik_A_RBufSend* aa = (Laik_A_RBufSend*) a;
+        laik_top_CommMatrix_update(cm, cm->inst->mylocationid, aa->to_rank, aa->count /* * sizeof(datatype)? */);
         laik_log_append(": from buf %d, off %lld, count %d ==> T%d",
                         aa->bufID, (long long int) aa->offset,
                         aa->count,
@@ -481,6 +488,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_BufRecv: {
         Laik_A_BufRecv* aa = (Laik_A_BufRecv*) a;
+        laik_top_CommMatrix_update(cm, aa->from_rank, cm->inst->mylocationid, aa->count /* * sizeof(datatype)? */);
         laik_log_append(": T%d ==> to %p, count %d",
                         aa->from_rank,
                         aa->buf,
@@ -761,7 +769,17 @@ void laik_log_Checksum(char* buf, int count, Laik_Type* t)
 
 void laik_log_CommMatrix(Laik_CommMatrix* cm)
 {
-    laik_log_append("Communication Matrix:");
+    laik_log_append("Communication Matrix:\n   ");
+    for(size_t i = 0; i < cm->nodecount; i++)
+        laik_log_append("| %5d%s", i, (i == cm->nodecount - 1 ? "\n" : " "));
+
+    for(size_t i = 0; i < cm->nodecount; i++) {
+        laik_log_append("%2d |", i);
+        for(size_t j = 0; j < cm->nodecount; j++) {
+            laik_log_append(" %5lu  ", top_mat_elm(i, j, cm));
+        }
+        laik_log_append("\n");
+    }
 }
 
 // logging helpers not just appending

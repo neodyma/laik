@@ -19,26 +19,25 @@
 #include <laik-internal.h>
 #include <laik/topology.h>
 
-#define mat_elm(r, c, n, arr) (arr[r * n + c])
-#define mat_row(r, n, arr)    (&arr[r * n])
-
 // generate a CommMatrix from SwitchStat information
 Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss) {}
 
 // allocate a new CommMatrix
-Laik_CommMatrix* laik_top_CommMatrix_init(size_t nodecount)
+Laik_CommMatrix* laik_top_CommMatrix_init(Laik_Instance* li)
 {
     Laik_CommMatrix* cm = calloc(1, sizeof(Laik_CommMatrix));
 
     if (!cm)
         laik_panic("Out of memory allocating CommMatrix object");
 
-    cm->matrix = malloc(nodecount * nodecount);
+    size_t nodecount = li->locations;
+    cm->matrix = calloc((nodecount * nodecount), sizeof(*cm->matrix));
 
     if (!cm->matrix)
         laik_panic("Out of memory allocating CommMatrix matrix");
 
     cm->nodecount = nodecount;
+    cm->inst      = li;
     return cm;
 }
 
@@ -52,8 +51,8 @@ void laik_top_CommMatrix_free(Laik_CommMatrix* cm)
 // add a new transfer to the CM
 Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, size_t to, int64_t amt)
 {
-    mat_elm(from, to, cm->nodecount, cm->matrix) += amt;
-    mat_elm(to, from, cm->nodecount, cm->matrix) += amt;
+    top_mat_elm(from, to, cm) += amt;
+    top_mat_elm(to, from, cm) += amt;
     return cm;
 }
 
@@ -61,8 +60,8 @@ Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, si
 Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from, size_t to)
 {
     uint64_t tmp[cm->nodecount];
-    memcpy(tmp, mat_row(to, cm->nodecount, cm->matrix), cm->nodecount);
-    memcpy(mat_row(to, cm->nodecount, cm->matrix), mat_row(from, cm->nodecount, cm->matrix), cm->nodecount);
-    memcpy(mat_row(from, cm->nodecount, cm->matrix), tmp, cm->nodecount);
+    memcpy(tmp, top_mat_row(to, cm), cm->nodecount);
+    memcpy(top_mat_row(to, cm), top_mat_row(from, cm), cm->nodecount);
+    memcpy(top_mat_row(from, cm), tmp, cm->nodecount);
     return cm;
 }
