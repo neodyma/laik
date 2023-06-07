@@ -64,6 +64,9 @@ struct _Laik_Backend {
   // sync of key-value store
   void (*sync)(Laik_KVStore* kvs);
 
+  // sync of comm matrices
+  void (*matsync)(Laik_CommMatrix* cm);
+
   // log backend-specific action, return true if handled (see laik_log_Action)
   bool (*log_action)(Laik_Action* a);
 

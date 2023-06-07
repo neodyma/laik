@@ -52,6 +52,8 @@ struct _Laik_Group {
     int rc_app;        // used by application?
     int rc_ownprocess; // refererence counter in own process
     int rc_others;     // sum of ref counters of other active processes
+
+    Laik_CommMatrix* comm_matrix; // Communication Matrix
 };
 
 
@@ -101,9 +103,6 @@ struct _Laik_Instance {
 
     // External Control Related
     Laik_RepartitionControl* repart_ctrl;
-    
-    // Communication Matrix
-    Laik_CommMatrix* comm_matrix;
 };
 
 // allocate space for a new LAIK instance.

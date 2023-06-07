@@ -434,7 +434,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
                     a->round, a->tid, laik_at_str(a->type));
     
     // does this still work on different ranks?
-    Laik_CommMatrix* cm = laik_log_inst()->comm_matrix;
+    Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
 
     Laik_BackendAction* ba = (Laik_BackendAction*) a;
     switch(a->type) {
@@ -449,7 +449,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
     }
 
     case LAIK_AT_MapSend: {
-        laik_top_CommMatrix_update(cm, cm->inst->mylocationid, ba->rank, ba->count /* * sizeof(datatype)? */);
+        laik_top_CommMatrix_update(cm, as->inst->mylocationid, ba->rank, ba->count * tc->data->elemsize);
         laik_log_append(": from mapNo %d, off %d, count %d ==> T%d",
                         ba->fromMapNo,
                         ba->offset,
@@ -460,7 +460,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_BufSend: {
         Laik_A_BufSend* aa = (Laik_A_BufSend*) a;
-        laik_top_CommMatrix_update(cm, cm->inst->mylocationid, aa->to_rank, aa->count /* * sizeof(datatype)? */);
+        laik_top_CommMatrix_update(cm, as->inst->mylocationid, aa->to_rank, aa->count * tc->data->elemsize);
         laik_log_append(": from %p, count %d ==> T%d",
                         aa->buf,
                         aa->count,
@@ -470,7 +470,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_RBufSend: {
         Laik_A_RBufSend* aa = (Laik_A_RBufSend*) a;
-        laik_top_CommMatrix_update(cm, cm->inst->mylocationid, aa->to_rank, aa->count /* * sizeof(datatype)? */);
+        laik_top_CommMatrix_update(cm, as->inst->mylocationid, aa->to_rank, aa->count * tc->data->elemsize);
         laik_log_append(": from buf %d, off %lld, count %d ==> T%d",
                         aa->bufID, (long long int) aa->offset,
                         aa->count,
@@ -488,7 +488,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_BufRecv: {
         Laik_A_BufRecv* aa = (Laik_A_BufRecv*) a;
-        laik_top_CommMatrix_update(cm, aa->from_rank, cm->inst->mylocationid, aa->count /* * sizeof(datatype)? */);
+        // laik_top_CommMatrix_update(cm, aa->from_rank, cm->inst->mylocationid, aa->count * tc->data->elemsize);
         laik_log_append(": T%d ==> to %p, count %d",
                         aa->from_rank,
                         aa->buf,

@@ -56,6 +56,17 @@ Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, si
     return cm;
 }
 
+void laik_top_CommMatrix_sync(Laik_CommMatrix* cm)
+{
+    const Laik_Backend* b = cm->inst->backend;
+    if(!b || !b->matsync)
+        laik_panic("backend or matrix sync unavailable");
+
+    cm->in_sync = true;
+    (b->matsync)(cm);
+    cm->in_sync = false;
+}
+
 // swap two nodes of the CM
 Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from, size_t to)
 {

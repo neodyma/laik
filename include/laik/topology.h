@@ -30,6 +30,7 @@ typedef struct _Laik_CommMatrix
     uint64_t*      matrix;
     size_t         nodecount;
     Laik_Instance* inst;
+    bool           in_sync;
 } Laik_CommMatrix;
 
 Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss);
@@ -37,6 +38,7 @@ Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss);
 Laik_CommMatrix* laik_top_CommMatrix_init(Laik_Instance* li);
 void             laik_top_CommMatrix_free(Laik_CommMatrix* cm);
 Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, size_t to, int64_t amt);
+void             laik_top_CommMatrix_sync(Laik_CommMatrix* cm);
 Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from, size_t to);
 
 #endif

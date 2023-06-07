@@ -117,13 +117,6 @@ Laik_Instance* laik_init(int* argc, char*** argv)
         }
     }
 
-    if(laik_log_begin(2)) {
-        inst->comm_matrix = laik_top_CommMatrix_init(inst);
-        laik_log(2, "CommMatrix initizalized at %p", inst->comm_matrix);
-        laik_log_CommMatrix(inst->comm_matrix);
-        laik_log_flush(0);
-    }
-
     return inst;
 }
 
@@ -182,7 +175,7 @@ void laik_finalize(Laik_Instance* inst)
         laik_log_flush(0);
     }
 
-    laik_log_CommMatrix(inst->comm_matrix);
+    laik_log_CommMatrix(laik_world(inst)->comm_matrix);
 
     laik_close_profiling_file(inst);
     laik_free_profiling(inst);
@@ -324,6 +317,13 @@ Laik_Group* laik_create_group(Laik_Instance* i, int maxsize)
     g->rc_app = 0;
     g->rc_others = 0;
     g->rc_ownprocess = 0;
+
+    g->comm_matrix = laik_top_CommMatrix_init(i);
+    if(laik_log_begin(2)) {
+        laik_log(2, "CommMatrix initizalized at %p", g->comm_matrix);
+        laik_log_CommMatrix(g->comm_matrix);
+        laik_log_flush(0);
+    }
 
     i->group_count++;
     return g;
