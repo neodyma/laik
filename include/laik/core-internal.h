@@ -64,6 +64,9 @@ struct _Laik_Instance {
     char* mylocation;
     char guid[64];
 
+    // use for reordering
+    int* locationmap;
+
     // handle to current world, may change (groups themselves are immutable)
     Laik_Group* world;
     // epoch counter, incremented when a new world is activated with a size change

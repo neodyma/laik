@@ -449,7 +449,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
     }
 
     case LAIK_AT_MapSend: {
-        laik_top_CommMatrix_update(cm, as->inst->mylocationid, ba->rank, ba->count * tc->data->elemsize);
+        laik_top_CommMatrix_update(cm, laik_mylocationid(as->inst), ba->rank, ba->count * tc->data->elemsize);
         laik_log_append(": from mapNo %d, off %d, count %d ==> T%d",
                         ba->fromMapNo,
                         ba->offset,
@@ -460,7 +460,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_BufSend: {
         Laik_A_BufSend* aa = (Laik_A_BufSend*) a;
-        laik_top_CommMatrix_update(cm, as->inst->mylocationid, aa->to_rank, aa->count * tc->data->elemsize);
+        laik_top_CommMatrix_update(cm, laik_mylocationid(as->inst), aa->to_rank, aa->count * tc->data->elemsize);
         laik_log_append(": from %p, count %d ==> T%d",
                         aa->buf,
                         aa->count,
@@ -470,7 +470,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_RBufSend: {
         Laik_A_RBufSend* aa = (Laik_A_RBufSend*) a;
-        laik_top_CommMatrix_update(cm, as->inst->mylocationid, aa->to_rank, aa->count * tc->data->elemsize);
+        laik_top_CommMatrix_update(cm, laik_mylocationid(as->inst), aa->to_rank, aa->count * tc->data->elemsize);
         laik_log_append(": from buf %d, off %lld, count %d ==> T%d",
                         aa->bufID, (long long int) aa->offset,
                         aa->count,

@@ -117,6 +117,9 @@ Laik_Instance* laik_init(int* argc, char*** argv)
         }
     }
 
+    int* reordermap = laik_top_reordering(inst);
+    if (reordermap && (reordermap[inst->mylocationid] != LAIK_RO_UNMAPPED))
+        inst->mylocationid = reordermap[inst->mylocationid] - LAIK_RO_OFFSET;
     return inst;
 }
 
@@ -185,8 +188,14 @@ void laik_finalize(Laik_Instance* inst)
 }
 
 //! get unique location ID for the calling process in given instance
-int laik_mylocationid(Laik_Instance *i)
+// TODO hook this for reordering
+int laik_mylocationid(Laik_Instance* i)
 {
+    // this seems very inefficient, maybe just add reorder as instance member
+    // int* reordering = laik_top_reordering(i);
+    // if (reordering)
+        // return reordering[i->mylocationid];
+    // else
     return i->mylocationid;
 }
 
