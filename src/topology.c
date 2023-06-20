@@ -116,7 +116,7 @@ int* laik_top_reordering(Laik_Instance* li)
                 continue;
 
             li->locationmap[k] = v + LAIK_RO_OFFSET;
-            laik_log(2, "rank %lu -> rank %d\n", k, v);
+            // laik_log(2, "rank %lu -> rank %d\n", k, v);
         }
 
         if (reorderfile && (li->mylocationid == 0)) { // both envs set -> dump reordering to file

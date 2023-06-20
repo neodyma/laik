@@ -769,6 +769,8 @@ void laik_log_Checksum(char* buf, int count, Laik_Type* t)
 
 void laik_log_CommMatrix(Laik_CommMatrix* cm)
 {
+    char str[4096] = { '\0' };
+
     laik_log_append("Communication Matrix:\n   ");
     for(size_t i = 0; i < cm->nodecount; i++)
         laik_log_append("| %5d%s", i, (i == cm->nodecount - 1 ? "\n" : " "));

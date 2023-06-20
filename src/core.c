@@ -118,11 +118,15 @@ Laik_Instance* laik_init(int* argc, char*** argv)
     }
 
     int* reordermap = laik_top_reordering(inst);
-    if (reordermap && (reordermap[inst->mylocationid] != LAIK_RO_UNMAPPED))
+    if (reordermap && (reordermap[inst->mylocationid] != LAIK_RO_UNMAPPED)) {
+        laik_log(2, "mylocation %3d mapped to %3d", inst->mylocationid,
+            reordermap[inst->mylocationid] - LAIK_RO_OFFSET);
+        // do we actually want to replace this? or just look up through the table every time..
+        // aka is the original id useful for anything?
         inst->mylocationid = reordermap[inst->mylocationid] - LAIK_RO_OFFSET;
+    }
     return inst;
 }
-
 
 int laik_size(Laik_Group* g)
 {
@@ -143,7 +147,6 @@ int laik_epoch(Laik_Instance* i)
 {
     return i->epoch;
 }
-
 
 void laik_finalize(Laik_Instance* inst)
 {
