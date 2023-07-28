@@ -2113,8 +2113,8 @@ void laik_aseq_addReduce3Rounds(Laik_ActionSeq* as,
         bufID = laik_aseq_addBufReserve(as, bufSize, -1);
 
     // collect values from tasks in input group
-    unsigned int bufOff[32], off = 0;
-    assert(inCount <= 32); // TODO: support more than 32 partitial inputs
+    unsigned int bufOff[256], off = 0;
+    assert(inCount <= 256); // TODO: support more than 32 partitial inputs
 
     // always put this task in front: we use toBuf to calculate
     // our results, but there may be input from us, which would
