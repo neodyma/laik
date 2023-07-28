@@ -50,6 +50,8 @@ void laik_enable_profiling_file(Laik_Instance* i, const char* filename);
 double laik_get_total_time(void);
 // get LAIK backend time for LAIK instance for which profiling is enabled
 double laik_get_backend_time(void);
+// get LAIK user time for LAIK instance for which profiling is enabled
+double laik_get_user_time(void);
 // for output-to-file mode, write out meassured times
 void laik_writeout_profile(void);
 // disable output-to-file mode, eventually closing yet open file before
