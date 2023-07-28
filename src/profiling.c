@@ -85,16 +85,25 @@ Laik_Profiling_Controller* laik_init_profiling(void)
 }
 
 //Time Measurement Funcitonality
-double laik_realtime(){
+double laik_realtime()
+{
     struct timeval tv;
     gettimeofday(&tv, 0);
 
     return tv.tv_sec+1e-6*tv.tv_usec;
 }
 
-double laik_cputime(){
+double laik_cputime()
+{
     clock_t clk = clock();
     return (double)clk/CLOCKS_PER_SEC;
+}
+
+double laik_monotonic()
+{
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return t.tv_sec + 1e-9 * t.tv_nsec;
 }
 
 double laik_wtime()
@@ -213,6 +222,14 @@ double laik_get_backend_time()
     if (!laik_profinst) return 0.0;
 
     return laik_profinst->profiling->time_backend;
+}
+
+// get LAIK user time for LAIK instance for which profiling is enabled
+double laik_get_user_time()
+{
+    if (!laik_profinst) return 0.0;
+
+    return laik_profinst->profiling->time_user;
 }
 
 // for output-to-file mode, write out meassured times
