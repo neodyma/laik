@@ -1,0 +1,77 @@
+== LAIK-0000-L07 0001.01  0:00.364 | LAIK git version: 002a8-dirty
+== LAIK-0000-L07 0002.01  0:00.364 | MPI backend initialized (at 'i01r01c02s05:1970267', rank 7/8)
+== LAIK-0000-L07 0003.01  0:00.366 | run partitioner 'all' for 'part-0' (group 1, space 'space-0'): 8 ranges
+== LAIK-0000-L07 0004.01  0:00.763 | run partitioner 'block' for 'part-1' (group 1, space 'space-1'): 8 ranges
+== LAIK-0000-L07 0005.01  0:00.764 | run partitioner 'cornerhalo' for 'part-2' (group 1, space 'space-1'): 8 ranges
+== LAIK-0000-L07 0006.01  0:00.830 | Init done
+== LAIK-0011-L07 0001.01  0:01.615 | For 11 iters: 0.785s, 3.184 GF/s, 33.624 GB/s
+== LAIK-0021-L07 0001.01  0:02.157 | For 10 iters: 0.541s, 4.249 GF/s, 44.339 GB/s
+== LAIK-0031-L07 0001.01  0:02.698 | For 10 iters: 0.541s, 4.253 GF/s, 44.377 GB/s
+== LAIK-0041-L07 0001.01  0:03.238 | For 10 iters: 0.540s, 4.259 GF/s, 44.439 GB/s
+== LAIK-0051-L07 0001.01  0:03.777 | For 10 iters: 0.539s, 4.264 GF/s, 44.491 GB/s
+== LAIK-0061-L07 0001.01  0:04.317 | For 10 iters: 0.540s, 4.261 GF/s, 44.460 GB/s
+== LAIK-0071-L07 0001.01  0:04.857 | For 10 iters: 0.540s, 4.260 GF/s, 44.452 GB/s
+== LAIK-0081-L07 0001.01  0:05.396 | For 10 iters: 0.539s, 4.264 GF/s, 44.498 GB/s
+== LAIK-0091-L07 0001.01  0:05.936 | For 10 iters: 0.540s, 4.257 GF/s, 44.425 GB/s
+== LAIK-0101-L07 0001.01  0:06.481 | For 10 iters: 0.545s, 4.219 GF/s, 44.029 GB/s
+== LAIK-0111-L07 0001.01  0:07.021 | For 10 iters: 0.540s, 4.260 GF/s, 44.457 GB/s
+== LAIK-0121-L07 0001.01  0:07.561 | For 10 iters: 0.540s, 4.263 GF/s, 44.479 GB/s
+== LAIK-0131-L07 0001.01  0:08.101 | For 10 iters: 0.540s, 4.261 GF/s, 44.466 GB/s
+== LAIK-0141-L07 0001.01  0:08.642 | For 10 iters: 0.541s, 4.252 GF/s, 44.369 GB/s
+== LAIK-0151-L07 0001.01  0:09.181 | For 10 iters: 0.540s, 4.262 GF/s, 44.474 GB/s
+== LAIK-0161-L07 0001.01  0:09.721 | For 10 iters: 0.540s, 4.258 GF/s, 44.427 GB/s
+== LAIK-0171-L07 0001.01  0:10.260 | For 10 iters: 0.538s, 4.273 GF/s, 44.590 GB/s
+== LAIK-0181-L07 0001.01  0:10.799 | For 10 iters: 0.539s, 4.268 GF/s, 44.537 GB/s
+== LAIK-0191-L07 0001.01  0:11.337 | For 10 iters: 0.539s, 4.267 GF/s, 44.529 GB/s
+== LAIK-0201-L07 0001.01  0:11.878 | For 10 iters: 0.540s, 4.257 GF/s, 44.424 GB/s
+== LAIK-0211-L07 0001.01  0:12.419 | For 10 iters: 0.541s, 4.252 GF/s, 44.370 GB/s
+== LAIK-0221-L07 0001.01  0:12.962 | For 10 iters: 0.543s, 4.234 GF/s, 44.186 GB/s
+== LAIK-0231-L07 0001.01  0:13.514 | For 10 iters: 0.552s, 4.165 GF/s, 43.465 GB/s
+== LAIK-0241-L07 0001.01  0:14.061 | For 10 iters: 0.547s, 4.207 GF/s, 43.901 GB/s
+== LAIK-0251-L07 0001.01  0:14.606 | For 10 iters: 0.545s, 4.220 GF/s, 44.030 GB/s
+== LAIK-0261-L07 0001.01  0:15.148 | For 10 iters: 0.542s, 4.243 GF/s, 44.270 GB/s
+== LAIK-0271-L07 0001.01  0:15.691 | For 10 iters: 0.543s, 4.238 GF/s, 44.225 GB/s
+== LAIK-0281-L07 0001.01  0:16.232 | For 10 iters: 0.542s, 4.245 GF/s, 44.291 GB/s
+== LAIK-0291-L07 0001.01  0:16.773 | For 10 iters: 0.541s, 4.254 GF/s, 44.387 GB/s
+== LAIK-0301-L07 0001.01  0:17.312 | For 10 iters: 0.539s, 4.268 GF/s, 44.537 GB/s
+== LAIK-0311-L07 0001.01  0:17.851 | For 10 iters: 0.539s, 4.270 GF/s, 44.561 GB/s
+== LAIK-0321-L07 0001.01  0:18.388 | For 10 iters: 0.538s, 4.277 GF/s, 44.625 GB/s
+== LAIK-0331-L07 0001.01  0:18.927 | For 10 iters: 0.539s, 4.270 GF/s, 44.553 GB/s
+== LAIK-0341-L07 0001.01  0:19.465 | For 10 iters: 0.538s, 4.275 GF/s, 44.609 GB/s
+== LAIK-0351-L07 0001.01  0:20.004 | For 10 iters: 0.538s, 4.271 GF/s, 44.568 GB/s
+== LAIK-0361-L07 0001.01  0:20.541 | For 10 iters: 0.537s, 4.280 GF/s, 44.658 GB/s
+== LAIK-0371-L07 0001.01  0:21.078 | For 10 iters: 0.537s, 4.281 GF/s, 44.671 GB/s
+== LAIK-0381-L07 0001.01  0:21.616 | For 10 iters: 0.538s, 4.276 GF/s, 44.624 GB/s
+== LAIK-0391-L07 0001.01  0:22.153 | For 10 iters: 0.537s, 4.281 GF/s, 44.667 GB/s
+== LAIK-0401-L07 0001.01  0:22.701 | For 10 iters: 0.547s, 4.202 GF/s, 43.851 GB/s
+== LAIK-0411-L07 0001.01  0:23.237 | For 10 iters: 0.536s, 4.287 GF/s, 44.735 GB/s
+== LAIK-0421-L07 0001.01  0:23.775 | For 10 iters: 0.538s, 4.274 GF/s, 44.598 GB/s
+== LAIK-0431-L07 0001.01  0:24.311 | For 10 iters: 0.535s, 4.295 GF/s, 44.821 GB/s
+== LAIK-0431-L07 0002.01  0:24.311 | For 430 iters: 23.481s, 4.225 GF/s, 43.951 GB/s
+== LAIK-0431-L07 0003.01  0:26.299 | switch statistics (this task):
+.. LAIK-0431-L07 0003.02  0:26.299 |   data 'sum': 91 switches (46 without actions, 91 transitions)
+.. LAIK-0431-L07 0003.03  0:26.299 |     data alloc: 1x, 8 B (max 8 B), free: 0x, 0 B, init 0 B, copy 0 B
+.. LAIK-0431-L07 0003.04  0:26.299 |     msg reduce: 45x, 45 Elems = 360 B (avg 8 B/red)
+.. LAIK-0431-L07 0003.05  0:26.299 |   data 'data-1': 432 switches (216 without actions, 432 transitions)
+.. LAIK-0431-L07 0003.06  0:26.299 |     data alloc: 2x, 200.0 MB (max 200.0 MB), free: 1x, 100.0 MB, init 0 B, copy 100.0 MB
+.. LAIK-0431-L07 0003.07  0:26.299 |     msg sent: 216x (216 async), 216 Elems = 1.7 KB (avg 8 B/msg)
+.. LAIK-0431-L07 0003.08  0:26.299 |         recv: 216x (216 async), 216 Elems = 1.7 KB (avg 8 B/msg)
+.. LAIK-0431-L07 0003.09  0:26.299 |   data 'data-2': 431 switches (216 without actions, 431 transitions)
+.. LAIK-0431-L07 0003.10  0:26.299 |     data alloc: 2x, 200.0 MB (max 200.0 MB), free: 1x, 100.0 MB, init 0 B, copy 100.0 MB
+.. LAIK-0431-L07 0003.11  0:26.299 |     msg sent: 215x (215 async), 215 Elems = 1.7 KB (avg 8 B/msg)
+.. LAIK-0431-L07 0003.12  0:26.299 |         recv: 215x (215 async), 215 Elems = 1.7 KB (avg 8 B/msg)
+.. LAIK-0431-L07 0003.13  0:26.299 |   summary: 954 switches (478 without actions, 954 transitions)
+.. LAIK-0431-L07 0003.14  0:26.299 |     data alloc: 5x, 400.0 MB (max 400.0 MB), free: 2x, 200.0 MB, init 0 B, copy 200.0 MB
+.. LAIK-0431-L07 0003.15  0:26.299 |     msg sent: 431x (431 async), 431 Elems = 3.4 KB (avg 8 B/msg)
+.. LAIK-0431-L07 0003.16  0:26.299 |         recv: 431x (431 async), 431 Elems = 3.4 KB (avg 8 B/msg)
+.. LAIK-0431-L07 0003.17  0:26.299 |         reduce: 45x, 45 Elems = 360 B (avg 8 B/red)
+== LAIK-0431-L07 0004.01  0:26.299 | Communication Matrix:
+.. LAIK-0431-L07 0004.02  0:26.299 |    |          0 |          1 |          2 |          3 |          4 |          5 |          6 |          7
+.. LAIK-0431-L07 0004.03  0:26.299 |  0 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.04  0:26.299 |  1 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.05  0:26.299 |  2 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.06  0:26.299 |  3 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.07  0:26.299 |  4 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.08  0:26.299 |  5 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.09  0:26.299 |  6 |          0            0            0            0            0            0            0            0 
+.. LAIK-0431-L07 0004.10  0:26.299 |  7 |          0            0            0            0            0            0         3448            0 
