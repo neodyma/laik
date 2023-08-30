@@ -52,7 +52,7 @@ void laik_top_CommMatrix_free(Laik_CommMatrix* cm)
 Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, size_t to, int64_t amt)
 {
     top_mat_elm(from, to, cm) += amt;
-    top_mat_elm(to, from, cm) += amt;
+    // top_mat_elm(to, from, cm) += amt;
     return cm;
 }
 

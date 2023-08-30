@@ -434,7 +434,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
                     a->round, a->tid, laik_at_str(a->type));
     
     // does this still work on different ranks?
-    Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
+    // Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
 
     Laik_BackendAction* ba = (Laik_BackendAction*) a;
     switch(a->type) {
@@ -449,7 +449,6 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
     }
 
     case LAIK_AT_MapSend: {
-        laik_top_CommMatrix_update(cm, laik_mylocationid(as->inst), ba->rank, ba->count * tc->data->elemsize);
         laik_log_append(": from mapNo %d, off %d, count %d ==> T%d",
                         ba->fromMapNo,
                         ba->offset,
@@ -460,7 +459,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_BufSend: {
         Laik_A_BufSend* aa = (Laik_A_BufSend*) a;
-        laik_top_CommMatrix_update(cm, laik_mylocationid(as->inst), aa->to_rank, aa->count * tc->data->elemsize);
+        // laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), aa->to_rank, aa->count * tc->data->elemsize);
         laik_log_append(": from %p, count %d ==> T%d",
                         aa->buf,
                         aa->count,
@@ -470,7 +469,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as)
 
     case LAIK_AT_RBufSend: {
         Laik_A_RBufSend* aa = (Laik_A_RBufSend*) a;
-        laik_top_CommMatrix_update(cm, laik_mylocationid(as->inst), aa->to_rank, aa->count * tc->data->elemsize);
+        // laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), aa->to_rank, aa->count * tc->data->elemsize);
         laik_log_append(": from buf %d, off %lld, count %d ==> T%d",
                         aa->bufID, (long long int) aa->offset,
                         aa->count,
@@ -769,18 +768,17 @@ void laik_log_Checksum(char* buf, int count, Laik_Type* t)
 
 void laik_log_CommMatrix(Laik_CommMatrix* cm)
 {
-    char str[4096] = { '\0' };
+    // char str[4096] = { '\0' };
 
     laik_log_append("Communication Matrix:\n   ");
     for(size_t i = 0; i < cm->nodecount; i++)
-        laik_log_append("| %5d%s", i, (i == cm->nodecount - 1 ? "\n" : " "));
+        laik_log_append("| %10d%s", i, (i == cm->nodecount - 1 ? "\n" : " "));
 
     for(size_t i = 0; i < cm->nodecount; i++) {
         laik_log_append("%2d |", i);
         for(size_t j = 0; j < cm->nodecount; j++) {
-            laik_log_append(" %5lu  ", top_mat_elm(i, j, cm));
+            laik_log_append(" %10lu %s", top_mat_elm(i, j, cm), (j == cm->nodecount - 1 ? "\n" : " "));
         }
-        laik_log_append("\n");
     }
 }
 

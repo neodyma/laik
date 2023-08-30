@@ -335,11 +335,6 @@ Laik_Group* laik_create_group(Laik_Instance* i, int maxsize)
     g->rc_ownprocess = 0;
 
     g->comm_matrix = laik_top_CommMatrix_init(i);
-    if(laik_log_begin(2)) {
-        laik_log(2, "CommMatrix initizalized at %p", g->comm_matrix);
-        laik_log_CommMatrix(g->comm_matrix);
-        laik_log_flush(0);
-    }
 
     i->group_count++;
     return g;

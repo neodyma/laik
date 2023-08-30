@@ -84,7 +84,10 @@ void laik_log_init_internal()
 
     str = getenv("LAIK_LOG_FILE");
     if(str){
-        laik_logfile = freopen(str, "a+", stdout);
+        char* filename = calloc(strlen(str) + strlen("_000") + 1, sizeof(char));
+        sprintf(filename, "%s_%03d", str, laik_loginst->mylocationid);
+        
+        laik_logfile = freopen(filename, "w", stdout);
         if(!laik_logfile){
             laik_log(LAIK_LL_Error, "Cannot Initialize File for print output.\n");
         }
@@ -283,7 +286,9 @@ void log_flush()
     }
     counter++;
 
-#define LINE_LEN 100
+// for now, just increase line length to support matrices
+// in the future we need a more robust way to do this
+#define LINE_LEN 2000
     // enough for prefix plus one line of log message
     static char buf2[150 + LINE_LEN];
     int off1 = 0, off, off2;
