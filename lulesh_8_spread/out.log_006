@@ -1,0 +1,142 @@
+== LAIK-0000-L06 0001.01  0:00.008 | LAIK git version: 002a8-dirty
+== LAIK-0000-L06 0002.01  0:00.008 | MPI backend initialized (at 'i01r01c05s01:400753', rank 6/8)
+== LAIK-0000-L06 0003.01  0:00.012 | run partitioner 'exclusive' for 'part-0' (group 0, space 'space-0'): 7200 ranges
+== LAIK-0000-L06 0004.01  0:00.015 | run partitioner 'halo' for 'part-1' (group 0, space 'space-0'): 7688 ranges
+== LAIK-0000-L06 0005.01  0:00.019 | run partitioner 'overlapingReduction' for 'part-2' (group 0, space 'space-1'): 7688 ranges
+== LAIK-0000-L06 0006.01  0:00.019 | run partitioner 'all' for 'part-3' (group 0, space 'space-2'): 8 ranges
+== LAIK-0000-L06 0007.01  0:00.019 | calc transition 'trans-0' ('part-1' ==(-)=> 'part-0'): 0 init, 0 loc, 0 red, 0 send, 0 recv
+== LAIK-0000-L06 0008.01  0:00.027 | calc transition 'trans-1' ('part-0' ==(preserve)=> 'part-1'): 0 init, 1800 loc, 0 red, 1083 send, 1083 recv
+== LAIK-0000-L06 0009.01  0:00.027 | calc transition 'trans-2' ('part-2' ==(init/sum)=> 'part-2'): 961 init, 0 loc, 0 red, 0 send, 0 recv
+== LAIK-0000-L06 0010.01  0:00.035 | calc transition 'trans-3' ('part-2' ==(preserve/sum)=> 'part-2'): 0 init, 900 loc, 1022 red, 0 send, 0 recv
+== LAIK-0000-L06 0011.01  0:00.054 | Alloc reservations for 'data-22': 0.238 MB
+== LAIK-0000-L06 0012.01  0:00.054 | calculated action seq 'aseq-22' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0012.02  0:00.054 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0012.03  0:00.054 |   transition 0: 'part-2' ==(init/sum)=> 'part-2' on data 'data-22'
+== LAIK-0000-L06 0013.01  0:00.055 | calculated action seq 'aseq-23' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0013.02  0:00.055 |   8 rounds, 3 buffers (0.092 MB), 54 actions (2952 B), 2058 ranges (32928 B)
+.. LAIK-0000-L06 0013.03  0:00.055 |   transition 0: 'part-2' ==(preserve/sum)=> 'part-2' on data 'data-22'
+== LAIK-0000-L06 0014.01  0:00.065 | Alloc reservations for 'data-23': 0.238 MB
+== LAIK-0000-L06 0015.01  0:00.065 | calculated action seq 'aseq-25' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0015.02  0:00.065 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0015.03  0:00.065 |   transition 0: 'part-2' ==(init/sum)=> 'part-2' on data 'data-23'
+== LAIK-0000-L06 0016.01  0:00.066 | calculated action seq 'aseq-26' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0016.02  0:00.066 |   8 rounds, 3 buffers (0.092 MB), 54 actions (2952 B), 2058 ranges (32928 B)
+.. LAIK-0000-L06 0016.03  0:00.066 |   transition 0: 'part-2' ==(preserve/sum)=> 'part-2' on data 'data-23'
+== LAIK-0000-L06 0017.01  0:00.075 | Alloc reservations for 'data-24': 0.238 MB
+== LAIK-0000-L06 0018.01  0:00.076 | calculated action seq 'aseq-28' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0018.02  0:00.076 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0018.03  0:00.076 |   transition 0: 'part-2' ==(init/sum)=> 'part-2' on data 'data-24'
+== LAIK-0000-L06 0019.01  0:00.076 | calculated action seq 'aseq-29' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0019.02  0:00.076 |   8 rounds, 3 buffers (0.092 MB), 54 actions (2952 B), 2058 ranges (32928 B)
+.. LAIK-0000-L06 0019.03  0:00.076 |   transition 0: 'part-2' ==(preserve/sum)=> 'part-2' on data 'data-24'
+== LAIK-0000-L06 0020.01  0:00.086 | Alloc reservations for 'data-25': 0.238 MB
+== LAIK-0000-L06 0021.01  0:00.086 | calculated action seq 'aseq-31' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0021.02  0:00.086 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0021.03  0:00.086 |   transition 0: 'part-2' ==(init/sum)=> 'part-2' on data 'data-25'
+== LAIK-0000-L06 0022.01  0:00.087 | calculated action seq 'aseq-32' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0022.02  0:00.087 |   8 rounds, 3 buffers (0.092 MB), 54 actions (2952 B), 2058 ranges (32928 B)
+.. LAIK-0000-L06 0022.03  0:00.087 |   transition 0: 'part-2' ==(preserve/sum)=> 'part-2' on data 'data-25'
+== LAIK-0000-L06 0023.01  0:00.100 | Alloc reservations for 'data-29': 0.238 MB
+== LAIK-0000-L06 0024.01  0:00.100 | calculated action seq 'aseq-37' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0024.02  0:00.100 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0024.03  0:00.100 |   transition 0: 'part-1' ==(-)=> 'part-0' on data 'data-29'
+== LAIK-0000-L06 0025.01  0:00.101 | calculated action seq 'aseq-38' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0025.02  0:00.101 |   5 rounds, 1 buffers (0.045 MB), 41 actions (1520 B), 2164 ranges (34624 B)
+.. LAIK-0000-L06 0025.03  0:00.101 |   transition 0: 'part-0' ==(preserve)=> 'part-1' on data 'data-29'
+== LAIK-0000-L06 0026.01  0:00.123 | Alloc reservations for 'data-30': 0.238 MB
+== LAIK-0000-L06 0027.01  0:00.123 | calculated action seq 'aseq-43' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0027.02  0:00.123 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0027.03  0:00.123 |   transition 0: 'part-1' ==(-)=> 'part-0' on data 'data-30'
+== LAIK-0000-L06 0028.01  0:00.124 | calculated action seq 'aseq-44' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0028.02  0:00.124 |   5 rounds, 1 buffers (0.045 MB), 41 actions (1520 B), 2164 ranges (34624 B)
+.. LAIK-0000-L06 0028.03  0:00.124 |   transition 0: 'part-0' ==(preserve)=> 'part-1' on data 'data-30'
+== LAIK-0000-L06 0029.01  0:00.146 | Alloc reservations for 'data-31': 0.238 MB
+== LAIK-0000-L06 0030.01  0:00.146 | calculated action seq 'aseq-49' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0030.02  0:00.146 |   0 rounds, 0 buffers (0.000 MB), 0 actions (0 B), 0 ranges (0 B)
+.. LAIK-0000-L06 0030.03  0:00.146 |   transition 0: 'part-1' ==(-)=> 'part-0' on data 'data-31'
+== LAIK-0000-L06 0031.01  0:00.147 | calculated action seq 'aseq-50' for 1 transition(s), backend 'MPI (two-sided)'
+.. LAIK-0000-L06 0031.02  0:00.147 |   5 rounds, 1 buffers (0.045 MB), 41 actions (1520 B), 2164 ranges (34624 B)
+.. LAIK-0000-L06 0031.03  0:00.147 |   transition 0: 'part-0' ==(preserve)=> 'part-1' on data 'data-31'
+== LAIK-0000-L06 0032.01  7:00.303 | switch statistics (this task):
+.. LAIK-0000-L06 0032.02  7:00.303 |   data 'data-0': 2031 switches (0 without actions, 2031 transitions)
+.. LAIK-0000-L06 0032.03  7:00.303 |     data alloc: 1x, 8 B (max 8 B), free: 0x, 0 B, init 8 B, copy 0 B
+.. LAIK-0000-L06 0032.04  7:00.303 |     msg reduce: 2030x, 2.0 KElems = 16.2 KB (avg 8 B/red)
+.. LAIK-0000-L06 0032.05  7:00.303 |   data 'data-1': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.06  7:00.303 |   data 'data-2': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.07  7:00.303 |   data 'data-3': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.08  7:00.303 |   data 'data-4': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.09  7:00.303 |   data 'data-5': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.10  7:00.303 |   data 'data-6': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.11  7:00.303 |   data 'data-7': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.12  7:00.303 |   data 'data-8': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.13  7:00.303 |   data 'data-9': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.14  7:00.303 |   data 'data-10': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.15  7:00.303 |   data 'data-11': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.16  7:00.303 |   data 'data-12': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.17  7:00.303 |   data 'data-13': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.18  7:00.303 |   data 'data-14': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.19  7:00.303 |   data 'data-15': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.20  7:00.303 |   data 'data-16': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.21  7:00.303 |   data 'data-17': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.22  7:00.303 |   data 'data-18': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.23  7:00.303 |   data 'data-19': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.24  7:00.303 |   data 'data-20': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.25  7:00.303 |   data 'data-21': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.26  7:00.303 |   data 'data-22': 4063 switches (1 without actions, 4063 transitions)
+.. LAIK-0000-L06 0032.27  7:00.303 |     data alloc: 964x, 330.2 KB (max 330.2 KB), free: 0x, 0 B, init 484.0 MB, copy 0 B
+.. LAIK-0000-L06 0032.28  7:00.303 |     msg sent: 12186x (12186 async), 6.0 MElems = 48.3 MB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.29  7:00.303 |         recv: 12186x (12186 async), 6.0 MElems = 48.3 MB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.30  7:00.303 |         reduce: 2031x, 2.0 KElems = 16.2 KB (avg 8 B/red)
+.. LAIK-0000-L06 0032.31  7:00.303 |     ops init: 0 , reduce: 6.0 M, buf copy: 183.3 MB
+.. LAIK-0000-L06 0032.32  7:00.303 |   data 'data-23': 4063 switches (1 without actions, 4063 transitions)
+.. LAIK-0000-L06 0032.33  7:00.303 |     data alloc: 964x, 330.2 KB (max 330.2 KB), free: 0x, 0 B, init 484.0 MB, copy 0 B
+.. LAIK-0000-L06 0032.34  7:00.303 |     msg sent: 12186x (12186 async), 6.0 MElems = 48.3 MB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.35  7:00.303 |         recv: 12186x (12186 async), 6.0 MElems = 48.3 MB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.36  7:00.303 |         reduce: 2031x, 2.0 KElems = 16.2 KB (avg 8 B/red)
+.. LAIK-0000-L06 0032.37  7:00.303 |     ops init: 0 , reduce: 6.0 M, buf copy: 183.3 MB
+.. LAIK-0000-L06 0032.38  7:00.303 |   data 'data-24': 4063 switches (1 without actions, 4063 transitions)
+.. LAIK-0000-L06 0032.39  7:00.303 |     data alloc: 964x, 330.2 KB (max 330.2 KB), free: 0x, 0 B, init 484.0 MB, copy 0 B
+.. LAIK-0000-L06 0032.40  7:00.303 |     msg sent: 12186x (12186 async), 6.0 MElems = 48.3 MB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.41  7:00.303 |         recv: 12186x (12186 async), 6.0 MElems = 48.3 MB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.42  7:00.303 |         reduce: 2031x, 2.0 KElems = 16.2 KB (avg 8 B/red)
+.. LAIK-0000-L06 0032.43  7:00.303 |     ops init: 0 , reduce: 6.0 M, buf copy: 183.3 MB
+.. LAIK-0000-L06 0032.44  7:00.303 |   data 'data-25': 3 switches (1 without actions, 3 transitions)
+.. LAIK-0000-L06 0032.45  7:00.303 |     data alloc: 964x, 330.2 KB (max 330.2 KB), free: 0x, 0 B, init 238.3 KB, copy 0 B
+.. LAIK-0000-L06 0032.46  7:00.303 |     msg sent: 6x (6 async), 3.0 KElems = 23.8 KB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.47  7:00.303 |         recv: 6x (6 async), 3.0 KElems = 23.8 KB (avg 4.0 KB/msg)
+.. LAIK-0000-L06 0032.48  7:00.303 |         reduce: 1x, 1 Elems = 8 B (avg 8 B/red)
+.. LAIK-0000-L06 0032.49  7:00.303 |     ops init: 0 , reduce: 3.0 K, buf copy: 90.2 KB
+.. LAIK-0000-L06 0032.50  7:00.303 |   data 'data-26': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.51  7:00.303 |   data 'data-27': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.52  7:00.303 |   data 'data-28': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.53  7:00.303 |   data 'data-29': 4066 switches (2033 without actions, 4066 transitions)
+.. LAIK-0000-L06 0032.54  7:00.303 |     data alloc: 964x, 372.2 KB (max 327.6 KB), free: 2x, 89.3 KB, init 0 B, copy 0 B
+.. LAIK-0000-L06 0032.55  7:00.303 |     msg sent: 14231x (14231 async), 5.7 MElems = 45.4 MB (avg 3.2 KB/msg)
+.. LAIK-0000-L06 0032.56  7:00.303 |         recv: 14231x (14231 async), 5.7 MElems = 45.4 MB (avg 3.2 KB/msg)
+.. LAIK-0000-L06 0032.57  7:00.303 |   data 'data-30': 4066 switches (2033 without actions, 4066 transitions)
+.. LAIK-0000-L06 0032.58  7:00.303 |     data alloc: 964x, 372.2 KB (max 327.6 KB), free: 2x, 89.3 KB, init 0 B, copy 0 B
+.. LAIK-0000-L06 0032.59  7:00.303 |     msg sent: 14231x (14231 async), 5.7 MElems = 45.4 MB (avg 3.2 KB/msg)
+.. LAIK-0000-L06 0032.60  7:00.303 |         recv: 14231x (14231 async), 5.7 MElems = 45.4 MB (avg 3.2 KB/msg)
+.. LAIK-0000-L06 0032.61  7:00.303 |   data 'data-31': 4066 switches (2033 without actions, 4066 transitions)
+.. LAIK-0000-L06 0032.62  7:00.303 |     data alloc: 964x, 372.2 KB (max 327.6 KB), free: 2x, 89.3 KB, init 0 B, copy 0 B
+.. LAIK-0000-L06 0032.63  7:00.303 |     msg sent: 14231x (14231 async), 5.7 MElems = 45.4 MB (avg 3.2 KB/msg)
+.. LAIK-0000-L06 0032.64  7:00.303 |         recv: 14231x (14231 async), 5.7 MElems = 45.4 MB (avg 3.2 KB/msg)
+.. LAIK-0000-L06 0032.65  7:00.303 |   data 'data-32': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.66  7:00.303 |   data 'data-33': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.67  7:00.303 |   data 'data-34': 1 switches (1 without actions, 1 transitions)
+.. LAIK-0000-L06 0032.68  7:00.303 |   summary: 26448 switches (6130 without actions, 26448 transitions)
+.. LAIK-0000-L06 0032.69  7:00.303 |     data alloc: 31598x, 8.5 MB (max 8.3 MB), free: 6x, 267.8 KB, init 1.5 GB, copy 0 B
+.. LAIK-0000-L06 0032.70  7:00.303 |     msg sent: 79257x (79257 async), 35.1 MElems = 281.0 MB (avg 3.5 KB/msg)
+.. LAIK-0000-L06 0032.71  7:00.303 |         recv: 79257x (79257 async), 35.1 MElems = 281.0 MB (avg 3.5 KB/msg)
+.. LAIK-0000-L06 0032.72  7:00.303 |         reduce: 8124x, 8.1 KElems = 65.0 KB (avg 8 B/red)
+.. LAIK-0000-L06 0032.73  7:00.303 |     ops init: 0 , reduce: 18.1 M, buf copy: 822.2 MB
+== LAIK-0000-L06 0033.01  7:00.304 | Communication Matrix:
+.. LAIK-0000-L06 0033.02  7:00.304 |    |          0 |          1 |          2 |          3 |          4 |          5 |          6 |          7
+.. LAIK-0000-L06 0033.03  7:00.304 |  0 |          0            0            0            0            0            0            0            0 
+.. LAIK-0000-L06 0033.04  7:00.304 |  1 |          0            0            0            0            0            0            0            0 
+.. LAIK-0000-L06 0033.05  7:00.304 |  2 |          0            0            0            0            0            0            0            0 
+.. LAIK-0000-L06 0033.06  7:00.304 |  3 |          0            0            0            0            0            0            0            0 
+.. LAIK-0000-L06 0033.07  7:00.304 |  4 |          0            0            0            0            0            0            0            0 
+.. LAIK-0000-L06 0033.08  7:00.304 |  5 |          0            0            0            0            0            0            0            0 
+.. LAIK-0000-L06 0033.09  7:00.304 |  6 |       8400          144       286560         8400       286560         8400            0       286560 
+.. LAIK-0000-L06 0033.10  7:00.304 |  7 |          0            0            0            0            0            0            0            0 
