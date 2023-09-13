@@ -11,7 +11,9 @@ class TreeMatch:
         self.hostnames = hostnames
 
     def arity(self, depth):
-        return self.top_graph.graph.degree(self.top_graph.layers[depth][0]) - 1
+        # TODO: support different arities of unbalanced trees by adding node parameter
+        node = 0
+        return len(getNodeChildren(self.top_graph, self.top_graph.layers[depth][node], depth))
 
     def solve(self):
         # return self.extendCommMatrix(1)
@@ -24,7 +26,7 @@ class TreeMatch:
 
         print("Starting TreeMatch for {} groups.".format(len(groups)))
 
-        for d in range(len(self.top_graph.layers) - 1, 1, -1):
+        for d in range(len(self.top_graph.layers) - 1, 0, -1):
             p = len(self.mod_mat)
             if p % self.arity(d - 1) != 0:
                 self.mod_mat = self.extendCommMatrix(d)
@@ -39,7 +41,7 @@ class TreeMatch:
         # TODO: this should only work with connected nodes instead of the entire layer
         l = list(itertools.combinations(self.top_graph.layers[cur_depth], self.arity(cur_depth - 1)))
 
-        print("Grouping process combinations with arity {} at depth {}.".format(self.arity(cur_depth - 1), cur_depth))
+        print("grouping process combinations with arity {} at depth {}.".format(self.arity(cur_depth - 1), cur_depth))
 
         # print("combinations      ", l)
         # print("num_combinations  ", len(l))
@@ -53,7 +55,6 @@ class TreeMatch:
                 for node in group1:
                     if node in group2:
                         G.add_edge(str(hash(group1) & UINT64_MAX), str(hash(group2) & UINT64_MAX))
-                        # print("incompatible groups {} ~ {} added to set.".format(str(group1), str(group2)))
 
         # print("graph_groups      ", len(G.vs))
         # print("groups to find    ", len(self.comm_mat) // self.arity(cur_depth - 1))
@@ -62,7 +63,7 @@ class TreeMatch:
             len(self.comm_mat) // self.arity(cur_depth - 1), len(self.comm_mat) // self.arity(cur_depth - 1)
         )
 
-        # print("found {} possible combinations out of {} groups.".format(len(independent_set), len(G.vs)))
+        print("found {} possible combinations out of {} groups at depth {}.".format(len(independent_set), len(G.vs), cur_depth))
 
         # print("node children of {}: {}".format(self.top_graph.layers[cur_depth][0],
                 # getNodeChildren(self.top_graph, self.top_graph.layers[cur_depth][0], cur_depth),))
