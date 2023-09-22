@@ -34,7 +34,7 @@ class TreeMatch:
             self.mod_mat = self.aggregateCommMatrix(groups[d])
         return [x for xs in groups[-1] for x in xs]
 
-    def groupProcesses(self, matrix: list, cur_depth: int):
+    def groupProcesses(self, matrix: list, cur_depth: int, percentile: int):
         # TODO: this only works for balanced trees for now
         # print("processes         ", len(self.hostnames))
         # print("groupsize         ", self.arity(cur_depth - 1))
@@ -72,11 +72,15 @@ class TreeMatch:
         # TODO: filter the sets greedy
         min_group = []
         min_weight = 0xFFFFFFFF
+        optimal_weight = 0 # TODO: this should be the maximum achievable weight over all groups
+        cutoff = optimal_weight * percentile
         for matching in independent_set:
             cur_weight = self.groupWeight(matrix, [l[g] for g in matching])
             if cur_weight < min_weight:
                 min_group = [l[g] for g in matching]
                 min_weight = cur_weight
+            elif cur_weight < cutoff:
+                return [l[g] for g in matching]
 
         return min_group
 
@@ -90,7 +94,7 @@ class TreeMatch:
             return weight
 
         for match in group:
-            weight -= self.elementSum([match], 0, 0)
+            weight -= self.elementSum([match], 0, 0) # * weight(link)
             # print("calculated weight {} for set {}".format(self.elementSum([match], 0, 0), match))
 
         # print("calculated weight {} for group {}".format(weight, group))
