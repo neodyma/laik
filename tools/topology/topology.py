@@ -28,11 +28,13 @@ def parseCommStats(logfiles: list) -> CommStats:
             for line in logfile:
                 if str_backend in line:  # set number of ranks
                     output = R_BE.search(line)
+                    if output is None:
+                        continue
                     if ranks == 0:
                         ranks = int(output.group(3))
                         commMatrix = [[0 for _ in range(ranks)] for _ in range(ranks)]
                         hostnames = ["" for _ in range(ranks)]
-                    hostnames[int(output.group(2))] = output.group(1)
+                    hostnames[int(output.group(2))] = output.group(1) # type: ignore
                     continue
                 rex = R_EX.search(line)
                 if rex is not None:
@@ -46,13 +48,13 @@ def parseCommStats(logfiles: list) -> CommStats:
                         if len(content) != ranks + 2:  # misformed matrix output
                             raise IndexError
                         values = [int(x) for x in content[2:]]
-                        commMatrix[int(content[0])] = [sum(x) for x in zip(commMatrix[int(content[0])], values)]
+                        commMatrix[int(content[0])] = [sum(x) for x in zip(commMatrix[int(content[0])], values)] # type: ignore
 
     # undirected: double transfer values!
     # commGraph = igraph.Graph.Weighted_Adjacency(commMatrix, mode="undirected")
     print(f"Parsed matrices from {len(logfiles)} files.")
     commGraph = igraph.Graph.Weighted_Adjacency(commMatrix)
-    return CommStats(commGraph, commMatrix, hostnames)
+    return CommStats(commGraph, commMatrix, hostnames) # type: ignore
 
 
 # generate a host graph based on the supermuc-ng node naming scheme
@@ -96,11 +98,12 @@ def generateHostGraph(hostnames: list[str]) -> HostGraph:
     # intra node: set to 1
     # inter node, on island: full omnipath
     # intra island: 3.75:1 compared to intra island
-    topGraph.add_edges(node_edges, dict(weight=[1 for _ in range(len(node_edges))]))
-    topGraph.add_edges(srvs_edges, dict(weight=[4 for _ in range(len(srvs_edges))]))
-    topGraph.add_edges(cabs_edges, dict(weight=[0 for _ in range(len(cabs_edges))]))
-    topGraph.add_edges(racks_edges, dict(weight=[0 for _ in range(len(racks_edges))]))
-    topGraph.add_edges(isls_edges, dict(weight=[15 for _ in range(len(isls_edges))]))
+    weights = [1, 4, 0, 0, 15]
+    topGraph.add_edges(node_edges, dict(weight=[weights[0] for _ in range(len(node_edges))]))
+    topGraph.add_edges(srvs_edges, dict(weight=[weights[1] for _ in range(len(srvs_edges))]))
+    topGraph.add_edges(cabs_edges, dict(weight=[weights[2] for _ in range(len(cabs_edges))]))
+    topGraph.add_edges(racks_edges, dict(weight=[weights[3] for _ in range(len(racks_edges))]))
+    topGraph.add_edges(isls_edges, dict(weight=[weights[4] for _ in range(len(isls_edges))]))
 
     layers = []
     # filter root nodes with only one leaf to minimize tree
@@ -120,7 +123,7 @@ def generateHostGraph(hostnames: list[str]) -> HostGraph:
     layers.append(srvs)
     layers.append(hostnames)
 
-    return HostGraph(topGraph, layers)
+    return HostGraph(topGraph, layers, weights)
 
 
 # solve the embedding problem for given graphs and return acceptable reordering
@@ -155,7 +158,7 @@ if __name__ == "__main__":
         cg = parseCommStats(args.ilog)
         if args.cg is not None:
             # dump to file
-            exit
+            exit(1)
         else:
             igraph.plot(
                 cg.commGraph,
@@ -189,4 +192,4 @@ if __name__ == "__main__":
 
     # we have an input matrix and topology, optimize and output reordering
     elif args.cg is not None and args.tg is not None:
-        exit
+        exit(1)

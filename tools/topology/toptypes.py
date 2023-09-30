@@ -15,6 +15,7 @@ class CommStats:
 class HostGraph:
     graph: igraph.Graph
     layers: list
+    weights: list
 
 
 def getNodeChildren(graph: HostGraph, node: str, nodelayer: int) -> list:

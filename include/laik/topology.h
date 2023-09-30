@@ -27,12 +27,15 @@
 #define top_mat_elm(r, c, mat) ((mat->matrix)[r * mat->nodecount + c])
 #define top_mat_row(r, mat)    (&(mat->matrix)[r * mat->nodecount])
 
+// =============================================================================
+// LAIK_TOPOLOGY BASE
+// =============================================================================
+
 typedef struct _Laik_CommMatrix
 {
     uint64_t*      matrix;
     size_t         nodecount;
     Laik_Instance* inst;
-    bool           in_sync;
 } Laik_CommMatrix;
 
 enum _Laik_Reorder_Mapped {
@@ -56,5 +59,12 @@ Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from,
 
 int* laik_top_reordering(Laik_Instance* li);
 int* laik_top_reordering_get(Laik_Instance* li);
+
+
+// =============================================================================
+// LAIK_TOPOLOGY TreeMatch
+// =============================================================================
+
+// todo virtual reordering func 
 
 #endif

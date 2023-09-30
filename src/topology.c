@@ -62,9 +62,9 @@ void laik_top_CommMatrix_sync(Laik_CommMatrix* cm)
     if (!b || !b->matsync)
         laik_panic("backend or matrix sync unavailable");
 
-    cm->in_sync = true;
+    // cm->in_sync = true;
     (b->matsync)(cm);
-    cm->in_sync = false;
+    // cm->in_sync = false;
 }
 
 // swap two nodes of the CM
