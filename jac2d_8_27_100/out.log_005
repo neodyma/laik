@@ -1,0 +1,43 @@
+== LAIK-0000-L05 0001.01  0:00.019 | LAIK git version: 7c3d6-dirty
+== LAIK-0000-L05 0002.01  0:00.019 | MPI backend initialized (at 'i01r01c04s03:1408843', rank 5/8)
+== LAIK-0000-L05 0003.01  0:00.019 | run partitioner 'bisection' for 'part-0' (group 1, space 'space-0'): 8 ranges
+== LAIK-0000-L05 0004.01  0:00.019 | run partitioner 'cornerhalo' for 'part-1' (group 1, space 'space-0'): 8 ranges
+== LAIK-0000-L05 0005.01  0:00.019 | run partitioner 'all' for 'part-2' (group 1, space 'space-1'): 8 ranges
+== LAIK-0000-L05 0006.01  0:00.019 | Init done
+== LAIK-0011-L05 0001.01  0:00.022 | For 11 iters: 0.003s, 0.014 GF/s, 0.127 GB/s
+== LAIK-0021-L05 0001.01  0:00.022 | For 10 iters: 0.000s, 0.085 GF/s, 0.790 GB/s
+== LAIK-0031-L05 0001.01  0:00.023 | For 10 iters: 0.001s, 0.034 GF/s, 0.317 GB/s
+== LAIK-0041-L05 0001.01  0:00.023 | For 10 iters: 0.000s, 0.084 GF/s, 0.786 GB/s
+== LAIK-0051-L05 0001.01  0:00.024 | For 10 iters: 0.000s, 0.080 GF/s, 0.748 GB/s
+== LAIK-0061-L05 0001.01  0:00.024 | For 10 iters: 0.000s, 0.081 GF/s, 0.750 GB/s
+== LAIK-0071-L05 0001.01  0:00.024 | For 10 iters: 0.000s, 0.088 GF/s, 0.814 GB/s
+== LAIK-0081-L05 0001.01  0:00.025 | For 10 iters: 0.000s, 0.087 GF/s, 0.806 GB/s
+== LAIK-0091-L05 0001.01  0:00.025 | For 10 iters: 0.000s, 0.084 GF/s, 0.786 GB/s
+== LAIK-0100-L05 0001.01  0:00.025 | For 100 iters: 0.006s, 0.049 GF/s, 0.459 GB/s
+== LAIK-0100-L05 0002.01  0:00.213 | switch statistics (this task):
+.. LAIK-0100-L05 0002.02  0:00.213 |   data 'data-0': 101 switches (51 without actions, 101 transitions)
+.. LAIK-0100-L05 0002.03  0:00.213 |     data alloc: 52x, 18.4 KB (max 2.0 KB), free: 51x, 17.5 KB, init 0 B, copy 728 B
+.. LAIK-0100-L05 0002.04  0:00.213 |     msg sent: 150x (150 async), 1.1 KElems = 8.4 KB (avg 56 B/msg)
+.. LAIK-0100-L05 0002.05  0:00.213 |         recv: 150x (150 async), 1.1 KElems = 8.4 KB (avg 56 B/msg)
+.. LAIK-0100-L05 0002.06  0:00.213 |   data 'data-1': 100 switches (50 without actions, 100 transitions)
+.. LAIK-0100-L05 0002.07  0:00.213 |     data alloc: 52x, 18.4 KB (max 2.0 KB), free: 51x, 17.5 KB, init 0 B, copy 728 B
+.. LAIK-0100-L05 0002.08  0:00.213 |     msg sent: 150x (150 async), 1.1 KElems = 8.4 KB (avg 56 B/msg)
+.. LAIK-0100-L05 0002.09  0:00.213 |         recv: 150x (150 async), 1.1 KElems = 8.4 KB (avg 56 B/msg)
+.. LAIK-0100-L05 0002.10  0:00.213 |   data 'sum': 21 switches (11 without actions, 21 transitions)
+.. LAIK-0100-L05 0002.11  0:00.213 |     data alloc: 1x, 8 B (max 8 B), free: 0x, 0 B, init 0 B, copy 0 B
+.. LAIK-0100-L05 0002.12  0:00.213 |     msg reduce: 10x, 10 Elems = 80 B (avg 8 B/red)
+.. LAIK-0100-L05 0002.13  0:00.213 |   summary: 222 switches (112 without actions, 222 transitions)
+.. LAIK-0100-L05 0002.14  0:00.213 |     data alloc: 105x, 36.9 KB (max 3.9 KB), free: 102x, 35.1 KB, init 0 B, copy 1.5 KB
+.. LAIK-0100-L05 0002.15  0:00.213 |     msg sent: 300x (300 async), 2.1 KElems = 16.8 KB (avg 56 B/msg)
+.. LAIK-0100-L05 0002.16  0:00.213 |         recv: 300x (300 async), 2.1 KElems = 16.8 KB (avg 56 B/msg)
+.. LAIK-0100-L05 0002.17  0:00.213 |         reduce: 10x, 10 Elems = 80 B (avg 8 B/red)
+== LAIK-0100-L05 0003.01  0:00.213 | Communication Matrix:
+.. LAIK-0100-L05 0003.02  0:00.213 |    |          0 |          1 |          2 |          3 |          4 |          5 |          6 |          7
+.. LAIK-0100-L05 0003.03  0:00.213 |  0 |          0            0            0            0            0            0            0            0 
+.. LAIK-0100-L05 0003.04  0:00.213 |  1 |          0            0            0            0            0            0            0            0 
+.. LAIK-0100-L05 0003.05  0:00.213 |  2 |          0            0            0            0            0            0            0            0 
+.. LAIK-0100-L05 0003.06  0:00.213 |  3 |          0            0            0            0            0            0            0            0 
+.. LAIK-0100-L05 0003.07  0:00.213 |  4 |          0            0            0            0            0            0            0            0 
+.. LAIK-0100-L05 0003.08  0:00.213 |  5 |          0            0            0            0        20800            0         1600        11200 
+.. LAIK-0100-L05 0003.09  0:00.213 |  6 |          0            0            0            0            0            0            0            0 
+.. LAIK-0100-L05 0003.10  0:00.213 |  7 |          0            0            0            0            0            0            0            0 
