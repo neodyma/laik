@@ -257,6 +257,8 @@ Laik_Instance* laik_new_instance(const Laik_Backend* b,
 
     instance->repart_ctrl = 0;
 
+    instance->locationmap = 0;
+
     // logging (TODO: multiple instances)
     laik_log_init(instance);
 

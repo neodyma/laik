@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 import argparse
 from functools import reduce
+import random
 from toptypes import CommStats, HostGraph, getNodeChildren
 from treematch import TreeMatch
 import igraph
 import itertools
 import math
+import numpy as np
 import re
 
 
@@ -34,7 +36,7 @@ def parseCommStats(logfiles: list) -> CommStats:
                         ranks = int(output.group(3))
                         commMatrix = [[0 for _ in range(ranks)] for _ in range(ranks)]
                         hostnames = ["" for _ in range(ranks)]
-                    hostnames[int(output.group(2))] = output.group(1) # type: ignore
+                    hostnames[int(output.group(2))] = output.group(1)  # type: ignore
                     continue
                 rex = R_EX.search(line)
                 if rex is not None:
@@ -48,18 +50,18 @@ def parseCommStats(logfiles: list) -> CommStats:
                         if len(content) != ranks + 2:  # misformed matrix output
                             raise IndexError
                         values = [int(x) for x in content[2:]]
-                        commMatrix[int(content[0])] = [sum(x) for x in zip(commMatrix[int(content[0])], values)] # type: ignore
+                        commMatrix[int(content[0])] = [sum(x) for x in zip(commMatrix[int(content[0])], values)]  # type: ignore
 
     # undirected: double transfer values!
     # commGraph = igraph.Graph.Weighted_Adjacency(commMatrix, mode="undirected")
     print(f"Parsed matrices from {len(logfiles)} files.")
     commGraph = igraph.Graph.Weighted_Adjacency(commMatrix)
-    return CommStats(commGraph, commMatrix, hostnames) # type: ignore
+    return CommStats(commGraph, commMatrix, hostnames)  # type: ignore
 
 
 # generate a host graph based on the supermuc-ng node naming scheme
 # i01r01c01s01
-def generateHostGraph(hostnames: list[str]) -> HostGraph:
+def generateHostTopology(hostnames: list[str]) -> HostGraph:
     topGraph = igraph.Graph()
     R_LRZ = re.compile(r"(i\d+)(r\d+)(c\d+)(s\d+):(\d+)")  # too complicated
 
@@ -123,7 +125,8 @@ def generateHostGraph(hostnames: list[str]) -> HostGraph:
     layers.append(srvs)
     layers.append(hostnames)
 
-    return HostGraph(topGraph, layers, weights)
+    topArray = np.array(topGraph.distances(weights='weight'), dtype=int)
+    return HostGraph(topGraph, topArray[0:len(hostnames), 0:len(hostnames)].tolist(), layers, weights)
 
 
 # solve the embedding problem for given graphs and return acceptable reordering
@@ -142,7 +145,26 @@ def optimize(optimizer, *args) -> list:
     return globals()[optimizer](*args)
 
 
-if __name__ == "__main__":
+# create artificial communication matrix with known ideal reordering
+def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> (list, list):
+    # ideal_order = list(itertools.permutations(range(num_procs)))[random.randrange(math.factorial(num_procs))]
+    ideal_order = list(range(num_procs))
+    random.shuffle(ideal_order)
+
+    synth_matrix = [[0 for _ in range(num_procs)] for _ in range(num_procs)]
+    for chunk in np.array_split(ideal_order, len(ideal_order) // procs_per_cluster):
+        comm_weight = random.randrange(2**14)
+        for n1 in chunk:
+            for n2 in chunk:
+                if n1 != n2:
+                    synth_matrix[n1][n2] = comm_weight
+    return synth_matrix, ideal_order
+
+    # create clusters with high-communicating processes corresponding to procs_per_cpu
+    # e.g. num_procs=8, procs_per_cpu=2 -> pairs of communicating processes that should get mapped to same cpu
+
+
+def parserSetup() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="LAIK topology optimizer",
         description="Parse communication metadata, create structured representations, optimize communication paths and generate reordering parameters.",
@@ -151,26 +173,31 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--cg", help="Communication graph")
     parser.add_argument("-t", "--tg", help="Topology graph")
     parser.add_argument("-r", help=f"Reorder using ansatz [treeMatch, ..]")
+    return parser
+
+
+if __name__ == "__main__":
+    parser = parserSetup()
     args = parser.parse_args()
 
     # we have an input logfile, let's convert it to a usable Graph
     if args.ilog is not None:
-        cg = parseCommStats(args.ilog)
+        comm_stats = parseCommStats(args.ilog)
         if args.cg is not None:
             # dump to file
             exit(1)
         else:
             igraph.plot(
-                cg.commGraph,
+                comm_stats.commGraph,
                 target="graph.svg",
-                edge_label=[edge for edge in cg.commGraph.es["weight"]],
-                vertex_label=[x for x in range(len(cg.commGraph.vs))],
+                edge_label=[edge for edge in comm_stats.commGraph.es["weight"]],
+                vertex_label=[x for x in range(len(comm_stats.commGraph.vs))],
             )
 
             # for line in cg.commMatrix:
             # print(line)
 
-            hostgraph = generateHostGraph(list(map(lambda s: s.strip("'"), cg.hostnames)))
+            hostgraph = generateHostTopology(list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             hostgraphlayout = hostgraph.graph.layout_reingold_tilford(mode="in", root=hostgraph.layers[0])
 
             igraph.plot(
@@ -185,10 +212,18 @@ if __name__ == "__main__":
                 vertex_label_angle=math.pi / 4,
             )
 
-            print(optimize("treeMatch", cg.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), cg.hostnames))))
+            print(optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+
+            print(np.array(comm_stats.commMatrix, dtype=int))
+
+            # test_comms = generateGroupedComms(8, 2)
+            # print(
+                # optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+            # )
+            # print(test_comms[1])
 
             # for line in cg.commMatrix:
-                # print(line)
+            # print(line)
 
     # we have an input matrix and topology, optimize and output reordering
     elif args.cg is not None and args.tg is not None:

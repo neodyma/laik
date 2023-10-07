@@ -14,6 +14,7 @@ class CommStats:
 @dataclass
 class HostGraph:
     graph: igraph.Graph
+    topMatrix: list
     layers: list
     weights: list
 

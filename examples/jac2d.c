@@ -183,6 +183,10 @@ int main(int argc, char* argv[])
     int last_iter = 0;
     int res_iters = 0; // iterations done with residuum calculation
 
+    // get comm stats for :197f.
+    //   stats per data container or transition
+    // reorder here
+
     int iter = 0;
     for(; iter < maxiter; iter++) {
         laik_set_iteration(inst, iter + 1);

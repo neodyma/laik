@@ -107,11 +107,11 @@ class TreeMatch:
             if cur_weight < min_weight:
                 min_group = [full_set[g] for g in matching]
                 min_weight = cur_weight
-            elif cur_weight < cutoff:
-                min_group = [full_set[g] for g in matching]
-                break
+            # elif cur_weight < cutoff:
+                # min_group = [full_set[g] for g in matching]
+                # break
 
-        print("found matching within {}-percentile after {} iterations.".format(int(100*percentile), iterations))
+        # print("found matching within {}-percentile after {} iterations.".format(int(100*percentile), iterations))
         return min_group
     
     def findPossibleWeight(self, tuple_size):
@@ -128,7 +128,7 @@ class TreeMatch:
             return weight
 
         for match in group:
-            print("finding weight for match {}".format(match))
+            # print("finding weight for match {}".format(match))
             weight -= self.elementSum([match], 0, 0)  # * weight(link)
             # print("calculated weight {} for set {}".format(self.elementSum([match], 0, 0), match))
 
