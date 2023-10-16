@@ -126,8 +126,8 @@ def generateHostTopology(hostnames: list[str]) -> HostGraph:
     layers.append(srvs)
     layers.append(hostnames)
 
-    topArray = np.array(topGraph.distances(weights='weight'), dtype=int)
-    return HostGraph(topGraph, topArray[0:len(hostnames), 0:len(hostnames)].tolist(), layers, weights)
+    topArray = np.array(topGraph.distances(weights="weight"), dtype=int)
+    return HostGraph(topGraph, topArray[0 : len(hostnames), 0 : len(hostnames)].tolist(), layers, weights)
 
 
 # solve the embedding problem for given graphs and return acceptable reordering
@@ -141,9 +141,11 @@ def treeMatch(comm_mat, top_graph, hostnames) -> list:
     solver = TreeMatch(comm_mat, top_graph, hostnames)
     return solver.solve()
 
+
 def tauQAP(comm_mat, top_graph, hostnames) -> list:
     solver = TauQAP(comm_mat, top_graph, hostnames)
     return solver.solve()
+
 
 def optimize(optimizer, *args) -> list:
     return globals()[optimizer](*args)
@@ -166,6 +168,16 @@ def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> tuple:
 
     # create clusters with high-communicating processes corresponding to procs_per_cpu
     # e.g. num_procs=8, procs_per_cpu=2 -> pairs of communicating processes that should get mapped to same cpu
+
+
+def matchedReorderGroups(order1: list, order2: list, num_procs: int, procs_per_cluster: int):
+    set1, set2 = set(), set()
+    for chunk in np.array_split(order1, len(order1) // procs_per_cluster):
+        set1.add(frozenset(list(chunk)))
+    for chunk in np.array_split(order2, len(order2) // procs_per_cluster):
+        set2.add(frozenset(list(chunk)))
+    # set2 = frozenset(np.split(order1, len(order1) // procs_per_cluster))
+    return True if len(set1.difference(set2)) == 0 else False
 
 
 def parserSetup() -> argparse.ArgumentParser:
@@ -222,10 +234,11 @@ if __name__ == "__main__":
             # print(np.array(comm_stats.commMatrix, dtype=int))
             # print(np.array(hostgraph.topMatrix, dtype=int))
 
-            test_comms = generateGroupedComms(8, 2)
-            print(optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-            print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-            print(test_comms[1])
+            test_comms = generateGroupedComms(16, 2)
+            res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+            print(res)
+            # print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            print(matchedReorderGroups(res, test_comms[1], 16, 2))
 
             # for line in cg.commMatrix:
             # print(line)
