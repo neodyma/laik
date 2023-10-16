@@ -4,6 +4,7 @@ from functools import reduce
 import random
 from toptypes import CommStats, HostGraph, getNodeChildren
 from treematch import TreeMatch
+from qap import TauQAP
 import igraph
 import itertools
 import math
@@ -54,7 +55,7 @@ def parseCommStats(logfiles: list) -> CommStats:
 
     # undirected: double transfer values!
     # commGraph = igraph.Graph.Weighted_Adjacency(commMatrix, mode="undirected")
-    print(f"Parsed matrices from {len(logfiles)} files.")
+    # print(f"Parsed matrices from {len(logfiles)} files.")
     commGraph = igraph.Graph.Weighted_Adjacency(commMatrix)
     return CommStats(commGraph, commMatrix, hostnames)  # type: ignore
 
@@ -140,13 +141,16 @@ def treeMatch(comm_mat, top_graph, hostnames) -> list:
     solver = TreeMatch(comm_mat, top_graph, hostnames)
     return solver.solve()
 
+def tauQAP(comm_mat, top_graph, hostnames) -> list:
+    solver = TauQAP(comm_mat, top_graph, hostnames)
+    return solver.solve()
 
 def optimize(optimizer, *args) -> list:
     return globals()[optimizer](*args)
 
 
 # create artificial communication matrix with known ideal reordering
-def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> (list, list):
+def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> tuple:
     # ideal_order = list(itertools.permutations(range(num_procs)))[random.randrange(math.factorial(num_procs))]
     ideal_order = list(range(num_procs))
     random.shuffle(ideal_order)
@@ -212,15 +216,16 @@ if __name__ == "__main__":
                 vertex_label_angle=math.pi / 4,
             )
 
-            print(optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            # print(optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            # print(optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
 
-            print(np.array(comm_stats.commMatrix, dtype=int))
+            # print(np.array(comm_stats.commMatrix, dtype=int))
+            # print(np.array(hostgraph.topMatrix, dtype=int))
 
-            # test_comms = generateGroupedComms(8, 2)
-            # print(
-                # optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-            # )
-            # print(test_comms[1])
+            test_comms = generateGroupedComms(8, 2)
+            print(optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            print(test_comms[1])
 
             # for line in cg.commMatrix:
             # print(line)
