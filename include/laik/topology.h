@@ -59,6 +59,7 @@ Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from,
 
 int* laik_top_reordering(Laik_Instance* li);
 int* laik_top_reordering_get(Laik_Instance* li);
+Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase);
 
 
 // =============================================================================

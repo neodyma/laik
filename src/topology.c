@@ -150,3 +150,24 @@ int* laik_top_reordering_get(Laik_Instance* li)
 {
     return li->locationmap;
 }
+
+Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase)
+{
+    // check if reordering is wanted
+    // if not return initial group
+    Laik_Group* g = laik_clone_group(li->world);
+    laik_set_world(li, g);
+
+    // phase 0
+    int* reordermap = laik_top_reordering(li);
+    if (reordermap && (reordermap[li->mylocationid] != LAIK_RO_UNMAPPED)) {
+        laik_log(2, "%s: mylocation %3d mapped to %3d", li->mylocation, g->myid, reordermap[g->myid] - LAIK_RO_OFFSET);
+        g->myid = reordermap[g->myid] - LAIK_RO_OFFSET;
+    }
+
+    li->backend->updateGroup(li->world);
+
+    // to do: data movement with partitioning?
+
+    return li->world;
+}
