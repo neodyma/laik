@@ -1,0 +1,21 @@
+== LAIK-0000-L04 0001.01  0:00.007 | LAIK git version: b11df-dirty
+== LAIK-0000-L04 0002.01  0:00.007 | MPI backend initialized (at 'neo-ws:132495', rank 4/6)
+== LAIK-0001-L04 0001.01  0:00.011 | Enter phase 'init'
+== LAIK-0001-L04 0002.01  0:00.080 | run partitioner 'block' for 'part-0' (group 1, space 'space-0'): 6 ranges
+== LAIK-0002-L04 0001.01  0:00.080 | Enter phase '1st SpmV'
+== LAIK-0484-L04 0001.01  0:00.091 | run partitioner 'master' for 'part-1' (group 1, space 'space-0'): 1 ranges
+== LAIK-0485-L04 0001.01  0:00.092 | Enter phase '2nd SpmV'
+== LAIK-0485-L04 0002.01  0:00.092 | run partitioner 'all' for 'part-2' (group 1, space 'space-0'): 6 ranges
+== LAIK-0967-L04 0001.01  0:00.162 | switch statistics (this task):
+.. LAIK-0967-L04 0001.02  0:00.162 |   data 'data-0': 4 switches (1 without actions, 4 transitions)
+.. LAIK-0967-L04 0001.03  0:00.162 |     data alloc: 2x, 43.9 KB (max 40.0 KB), free: 2x, 43.9 KB, init 40.0 KB, copy 0 B
+.. LAIK-0967-L04 0001.04  0:00.162 |     msg sent: 1x (1 async), 482 Elems = 3.9 KB (avg 3.9 KB/msg)
+.. LAIK-0967-L04 0001.05  0:00.162 |         reduce: 1x, 5.0 KElems = 40.0 KB (avg 40.0 KB/red)
+== LAIK-0967-L04 0002.01  0:00.163 | Communication Matrix:
+.. LAIK-0967-L04 0002.02  0:00.163 |    |          0 |          1 |          2 |          3 |          4 |          5
+.. LAIK-0967-L04 0002.03  0:00.163 |  0 |          0            0            0            0            0            0 
+.. LAIK-0967-L04 0002.04  0:00.163 |  1 |          0            0            0            0            0            0 
+.. LAIK-0967-L04 0002.05  0:00.163 |  2 |          0            0            0            0            0            0 
+.. LAIK-0967-L04 0002.06  0:00.163 |  3 |          0            0            0            0            0            0 
+.. LAIK-0967-L04 0002.07  0:00.163 |  4 |       3856            0            0            0            0            0 
+.. LAIK-0967-L04 0002.08  0:00.163 |  5 |          0            0            0            0            0            0 
