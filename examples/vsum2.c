@@ -48,6 +48,7 @@ int main(int argc, char* argv[])
     if (size == 0) size = 1000000;
 
     laik_set_phase(inst, 0, "init", NULL);
+    laik_enable_profiling(inst);
 
     double *base;
     uint64_t count;
@@ -59,6 +60,8 @@ int main(int argc, char* argv[])
     Laik_Data* a = laik_new_data_1d(inst, laik_Double, size);
 
     laik_set_phase(inst, 1, "master-only", NULL);
+
+    laik_profile_user_start(inst);
 
     // initialize at master (others do nothing, empty partition)
     laik_switchto_new_partitioning(a, world, laik_Master,
@@ -134,6 +137,9 @@ int main(int argc, char* argv[])
         printf("Total sums: %.0f, %.0f, %.0f, %.0f\n",
                base[0], base[1], base[2], base[3]);
     }
+
+    laik_profile_user_stop(inst);
+    printf("time: %lf\n", laik_get_user_time());
 
     laik_finalize(inst);
     return 0;

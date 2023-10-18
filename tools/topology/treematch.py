@@ -31,7 +31,7 @@ class TreeMatch:
 
     def doTreeMatch(self):
         groups = [[] for _ in range(len(self.top_graph.layers))]
-        print("Starting TreeMatch for {} groups.".format(len(groups)))
+        # print("Starting TreeMatch for {} groups.".format(len(groups)))
 
         # process the tree bottom-up
         for d in range(len(self.top_graph.layers) - 1, 0, -1):
@@ -53,7 +53,7 @@ class TreeMatch:
 
         # all possible combinations of elements at the current layer
         l = list(itertools.combinations(self.top_graph.layers[cur_depth], self.arity(cur_depth - 1)))
-        print("grouping process combinations with arity {} at depth {}.".format(self.arity(cur_depth - 1), cur_depth))
+        # print("grouping process combinations with arity {} at depth {}.".format(self.arity(cur_depth - 1), cur_depth))
 
         # print("combinations      ", l)
         # print("num_combinations  ", len(l))
@@ -77,11 +77,11 @@ class TreeMatch:
             len(self.comm_mat) // self.arity(cur_depth - 1), len(self.comm_mat) // self.arity(cur_depth - 1)
         )
 
-        print(
-            "found {} possible combinations out of {} groups at depth {}.".format(
-                len(independent_set), len(G.vs), cur_depth
-            )
-        )
+        # print(
+        #     "found {} possible combinations out of {} groups at depth {}.".format(
+        #         len(independent_set), len(G.vs), cur_depth
+        #     )
+        # )
 
         # print("node children of {}: {}".format(self.top_graph.layers[cur_depth][0],
         # getNodeChildren(self.top_graph, self.top_graph.layers[cur_depth][0], cur_depth),))

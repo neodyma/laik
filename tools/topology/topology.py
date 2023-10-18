@@ -228,20 +228,19 @@ if __name__ == "__main__":
                 vertex_label_angle=math.pi / 4,
             )
 
-            # print(optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-            # print(optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            print("treeMatch: ", optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            print("tauQAP:    ", optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
 
-            # print(np.array(comm_stats.commMatrix, dtype=int))
+            np.set_printoptions(linewidth=130)
+            print(np.array(comm_stats.commMatrix, dtype=int))
             # print(np.array(hostgraph.topMatrix, dtype=int))
 
-            test_comms = generateGroupedComms(16, 2)
-            res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-            print(res)
+            # test_comms = generateGroupedComms(16, 2)
+            # res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+            # print(res)
             # print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-            print(matchedReorderGroups(res, test_comms[1], 16, 2))
 
-            # for line in cg.commMatrix:
-            # print(line)
+            # print(matchedReorderGroups(res, test_comms[1], 16, 2))
 
     # we have an input matrix and topology, optimize and output reordering
     elif args.cg is not None and args.tg is not None:
