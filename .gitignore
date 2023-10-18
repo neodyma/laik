@@ -12,3 +12,6 @@ compile_commands.json
 /build*/
 *.so.dSYM/
 /messungen/
+
+tools/topology/__pycache__
+tools/topology/venv
