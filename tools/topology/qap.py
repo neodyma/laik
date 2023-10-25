@@ -10,6 +10,7 @@ class TauQAP:
         self.comm_mat = comm_mat
         self.top_graph = top_graph
         self.hostnames = hostnames
+        print("QAP set up")
 
     def __str__(self) -> str:
         return (
@@ -55,6 +56,8 @@ class TauQAP:
             assigned_procs.append(max_load)
             unassigned_cores.remove(min_dist)
             assigned_cores.append(min_dist)
+
+        print("QAP Construction: ", reordering)
         return reordering
 
     # iteratively improve initial reordering (identity)

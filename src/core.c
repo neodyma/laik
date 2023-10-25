@@ -117,7 +117,7 @@ Laik_Instance* laik_init(int* argc, char*** argv)
         }
     }
 
-    Laik_Group* g = laik_allow_reordering(inst, 0);
+    laik_allow_reordering(inst, 0);
 
     // Laik_Group* g = laik_clone_group(inst->world);
     // laik_set_world(inst, g);

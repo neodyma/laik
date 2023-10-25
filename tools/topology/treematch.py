@@ -9,6 +9,7 @@ class TreeMatch:
         self.mod_mat = comm_mat
         self.top_graph = top_graph
         self.hostnames = hostnames
+        print("TreeMatch set up")
 
     def __str__(self) -> str:
         return (

@@ -55,7 +55,7 @@ def parseCommStats(logfiles: list) -> CommStats:
 
     # undirected: double transfer values!
     # commGraph = igraph.Graph.Weighted_Adjacency(commMatrix, mode="undirected")
-    # print(f"Parsed matrices from {len(logfiles)} files.")
+    print(f"Parsed matrices from {len(logfiles)} files.")
     commGraph = igraph.Graph.Weighted_Adjacency(commMatrix)
     return CommStats(commGraph, commMatrix, hostnames)  # type: ignore
 
@@ -133,8 +133,12 @@ def generateHostTopology(hostnames: list[str]) -> HostGraph:
 # solve the embedding problem for given graphs and return acceptable reordering
 # todo we probably need the hostnames sooner or later
 #   for now on test we always get successive hosts
-def reorder(comm_graph, top_graph) -> list:
-    return [1, 2, 3]
+def generate_LAIK_REORDERING(reordering: list) -> str:
+    reorderstr = "LAIK_REORDERING="
+    for index, node in enumerate(reordering):
+        reorderstr += "{}.{},".format(index, node)
+
+    return reorderstr[:-1]
 
 
 def treeMatch(comm_mat, top_graph, hostnames) -> list:
@@ -188,6 +192,7 @@ def parserSetup() -> argparse.ArgumentParser:
     parser.add_argument("-i", "--ilog", nargs="+", help="Input LAIK_LOG_FILEs")
     parser.add_argument("-c", "--cg", help="Communication graph")
     parser.add_argument("-t", "--tg", help="Topology graph")
+    parser.add_argument("-o", "--out", help="Output matrix file")
     parser.add_argument("-r", help=f"Reorder using ansatz [treeMatch, ..]")
     return parser
 
@@ -199,6 +204,8 @@ if __name__ == "__main__":
     # we have an input logfile, let's convert it to a usable Graph
     if args.ilog is not None:
         comm_stats = parseCommStats(args.ilog)
+        if args.out is not None:
+            np.savetxt(args.out, np.array(comm_stats.commMatrix, dtype=int), "%10d")
         if args.cg is not None:
             # dump to file
             exit(1)
@@ -228,11 +235,17 @@ if __name__ == "__main__":
                 vertex_label_angle=math.pi / 4,
             )
 
-            print("treeMatch: ", optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-            print("tauQAP:    ", optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-
-            np.set_printoptions(linewidth=130)
+            np.set_printoptions(linewidth=168, edgeitems=4)
             print(np.array(comm_stats.commMatrix, dtype=int))
+
+            # tm = optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+            # print("treeMatch: ", tm)
+            # print(generate_LAIK_REORDERING(tm))
+
+            qap = optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+            print("tauQAP:    ", qap)
+            print(generate_LAIK_REORDERING(qap))
+
             # print(np.array(hostgraph.topMatrix, dtype=int))
 
             # test_comms = generateGroupedComms(16, 2)
