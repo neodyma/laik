@@ -8,10 +8,11 @@ SUBDIRS=examples
 -include Makefile.config
 
 LDFLAGS=$(OPT)
-IFLAGS=-I$(SDIR)include -I$(SDIR)src -I.
+IFLAGS=-I$(SDIR)include -I$(SDIR)src -I$(SDIR)src/topology -I.
 LDLIBS=-ldl
 
 SRCS = $(wildcard $(SDIR)src/*.c)
+SRCS += $(wildcard $(SDIR)src/topology/*.c)
 ifdef USE_TCP
 SRCS += $(wildcard $(SDIR)src/backends/tcp/*.c)
 IFLAGS += $(TCP_INC)
