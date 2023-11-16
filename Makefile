@@ -1,6 +1,7 @@
 # default settings
 PREFIX=/usr/local
-OPT=-O0 -g
+# OPT=-O0 -g
+OPT=-O3
 WARN=-Wall -Wextra
 SUBDIRS=examples
 
