@@ -25,28 +25,49 @@
 #include <sys/stat.h>
 
 #define top_mat_elm(r, c, mat) ((mat->matrix)[r * mat->nodecount + c])
-#define top_mat_row(r, mat)    (&(mat->matrix)[r * mat->nodecount])
+#define top_mat_row(r, mat) (&(mat->matrix)[r * mat->nodecount])
 
 // =============================================================================
 // LAIK_TOPOLOGY BASE
 // =============================================================================
 
-typedef struct _Laik_CommMatrix
-{
-    uint64_t*      matrix;
-    size_t         nodecount;
+typedef struct _Laik_CommMatrix {
     Laik_Instance* inst;
+    size_t         nodecount;
+    uint64_t*      matrix;
 } Laik_CommMatrix;
+
+typedef struct _Laik_Topology_Matrix {
+    Laik_Instance* inst;
+    size_t         nodecount;
+    uint64_t*      matrix;
+} Laik_Topology_Matrix;
+
+typedef struct _Laik_Topology_Graph {
+    uint64_t size;
+} Laik_Topology_Graph;
+
+enum _Laik_Topology_Which {
+    LAIK_TOP_IS_MAT,
+    LAIK_TOP_IS_GRAPH,
+};
+
+typedef struct _Laik_Topology {
+    uint8_t which;
+    union {
+        Laik_Topology_Matrix* mat;
+        Laik_Topology_Graph*  graph;
+    } data;
+} Laik_Topology;
 
 enum _Laik_Reorder_Mapped {
     LAIK_RO_UNMAPPED = 0,
-    LAIK_RO_OFFSET   = 1,
+    LAIK_RO_OFFSET = 1,
 };
 
-typedef struct _Laik_Reordering_File
-{
+typedef struct _Laik_Reordering_File {
     uint32_t nodecount;
-    int      reordering[]; // use a VLA
+    int      reordering[];  // use a VLA
 } __attribute__((packed)) Laik_Reordering_File;
 
 Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss);
@@ -57,15 +78,17 @@ Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, si
 void             laik_top_CommMatrix_sync(Laik_CommMatrix* cm);
 Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from, size_t to);
 
-int* laik_top_reordering(Laik_Instance* li);
-int* laik_top_reordering_get(Laik_Instance* li);
+int*        laik_top_reordering(Laik_Instance* li);
+int*        laik_top_reordering_get(Laik_Instance* li);
 Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase);
-
+int*        laik_top_do_reorder(Laik_CommMatrix* cm, Laik_Topology* top);
 
 // =============================================================================
-// LAIK_TOPOLOGY TreeMatch
+// LAIK_TOPOLOGY tauQAP
 // =============================================================================
 
-// todo virtual reordering func 
+int* laik_top_do_reorder_QAP(Laik_CommMatrix* cm, Laik_Topology* top);
+
+// todo virtual reordering func
 
 #endif
