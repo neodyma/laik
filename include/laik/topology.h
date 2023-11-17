@@ -70,6 +70,11 @@ typedef struct _Laik_Reordering_File {
     int      reordering[];  // use a VLA
 } __attribute__((packed)) Laik_Reordering_File;
 
+typedef struct _Laik_Topology_Indexed_Element {
+    size_t index;
+    uint64_t val;
+} Laik_Topology_Indexed_Element;
+
 Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss);
 
 Laik_CommMatrix* laik_top_CommMatrix_init(Laik_Instance* li);

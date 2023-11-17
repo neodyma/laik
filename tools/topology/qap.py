@@ -76,7 +76,7 @@ class TauQAP:
             load += self.comm_mat[i][process]
         return load
 
-    # calculate total distance  between node and already assigned nodes
+    # calculate total distance between node and already assigned nodes
     def calcCoreDist(self, node: int, assigned: Iterable[int]):
         dist = 0
         for i in range(len(self.hostnames)):
@@ -119,3 +119,7 @@ class TauQAP:
             for j in range(len(self.hostnames)):
                 cost += self.comm_mat[order[i]][order[j]] * self.top_graph.topMatrix[i][j]
         return cost
+
+if __name__ == "__main__":
+    qap = TauQAP([[1,0,0,2],[2,0,0,0],[2,0,0,0],[2,0,0,0]], HostGraph(igraph.Graph(), [[1,10,10,1],[10,1,1,1],[10,1,1,1],[1,1,1,1]], [], []), ["0","1","2","3"])
+    print(qap.cyclicSearch([0,1,2,3]))

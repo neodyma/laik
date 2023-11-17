@@ -17,14 +17,15 @@
 
 #include <laik-internal.h>
 #include <laik/topology.h>
+#include <sys/queue.h>
 
 int*     top_QAP_construction(Laik_CommMatrix*, Laik_Topology_Matrix*);
 int*     top_QAP_improvement(Laik_CommMatrix*, Laik_Topology_Matrix*);
 int*     top_QAP_cyclicSearch(Laik_CommMatrix*, Laik_Topology_Matrix*, int*);
 int*     top_QAP_pairxchg(int*, size_t, size_t);
 uint64_t top_QAP_totalCost(Laik_CommMatrix*, Laik_Topology_Matrix*, int*);
-uint64_t top_QAP_commLoad(Laik_CommMatrix*, size_t, size_t*);
-uint64_t top_QAP_coreDist(Laik_Topology_Matrix*, size_t, size_t*);
+uint64_t top_QAP_commLoad(Laik_CommMatrix*, size_t, size_t, int*);
+uint64_t top_QAP_coreDist(Laik_Topology_Matrix*, size_t, size_t, int*);
 
 // optimize given pattern for topology using QAP
 // @param cm communication matrix @param top topology struct
@@ -36,7 +37,46 @@ int* laik_top_do_reorder_QAP(Laik_CommMatrix* cm, Laik_Topology* top)
 }
 
 // do the QAP construction method
-int* top_QAP_construction(Laik_CommMatrix* cm, Laik_Topology_Matrix* top) {}
+// @returns heap pointer to reordering
+int* top_QAP_construction(Laik_CommMatrix* cm, Laik_Topology_Matrix* top)
+{
+    int* reordering = calloc(cm->nodecount, sizeof(int));
+    if (!reordering) return NULL;
+
+    int* identity = calloc(cm->nodecount, sizeof(int));
+    if (!identity) return NULL;
+    for (size_t i = 0; i < cm->nodecount; i++) identity[i] = (int)i;
+
+    // save BOTH assigned and unassigned in one array:
+    // [.., (assigned), .., |, .., (unassigned), ..]
+    // index keeps track of separator (== #assigned)
+    Laik_Topology_Indexed_Element* procs = calloc(cm->nodecount, sizeof(Laik_Topology_Indexed_Element));
+    Laik_Topology_Indexed_Element* cores = calloc(cm->nodecount, sizeof(Laik_Topology_Indexed_Element));
+    if (!loads || !dists) return NULL;
+
+    uint64_t maxload_index = 0, mindist_index = 0;
+    for (size_t i = 0; i < cm->nodecount; i++) {
+        uint64_t maxload = 0, mindist = -1;
+        uint64_t cur_load = top_QAP_commLoad(cm, i, cm->nodecount, identity);
+        uint64_t cur_dist = top_QAP_coreDist(top, i, cm->nodecount, identity);
+        if (cur_load > maxload) {
+            maxload = cur_load;
+            maxload_index = i;
+        }
+        if (cur_dist < mindist) {
+            mindist = cur_dist;
+            mindist_index = i;
+        }
+    }
+
+    reordering[mindist_index] = maxload_index;
+
+    // simulate list with array and index to last element
+    // append: write to index and increment
+    // always sort
+
+    return reordering;
+}
 
 // do the QAP improvement runs
 int* top_QAP_improvement(Laik_CommMatrix* cm, Laik_Topology_Matrix* top)
@@ -67,6 +107,8 @@ int* top_QAP_cyclicSearch(Laik_CommMatrix* cm, Laik_Topology_Matrix* top, int* i
             memcpy(best_sol, current_sol, n * sizeof(int));
             best_cost = current_cost;
         }
+        else  // undo the exchange to reset to best solution
+            top_QAP_pairxchg(current_sol, i, j);
         if (j < n - 1)
             j += 1;
         else if (j == n && i < n - 2) {
@@ -101,7 +143,7 @@ uint64_t top_QAP_totalCost(Laik_CommMatrix* cm, Laik_Topology_Matrix* top, int* 
     return cost;
 }
 
-int cmpfunc(const void* a, const void* b)
+int top_func_findEqual(const void* a, const void* b)
 {
     const size_t* a_ptr = a;
     const size_t* b_ptr = b;
@@ -110,11 +152,11 @@ int cmpfunc(const void* a, const void* b)
 
 // calculate total communication load between process and already assigned processes
 // @param assigned should always be sorted
-uint64_t top_QAP_commLoad(Laik_CommMatrix* mat, size_t process, size_t* assigned)
+uint64_t top_QAP_commLoad(Laik_CommMatrix* mat, size_t process, size_t a_len, int* assigned)
 {
     uint64_t load = 0;
     for (size_t i = 0; i < mat->nodecount; i++)
-        if (i != process && bsearch(&i, assigned, mat->nodecount, sizeof(size_t), cmpfunc) != NULL) {
+        if (i != process && bsearch(&i, assigned, a_len, sizeof(size_t), top_func_findEqual) != NULL) {
             load += top_mat_elm(process, i, mat);
             load += top_mat_elm(i, process, mat);
         }
@@ -123,11 +165,11 @@ uint64_t top_QAP_commLoad(Laik_CommMatrix* mat, size_t process, size_t* assigned
 
 // calculate total distance between node and already assigned nodes
 // ensure @param assigned is always sorted
-uint64_t top_QAP_coreDist(Laik_Topology_Matrix* top, size_t node, size_t* assigned)
+uint64_t top_QAP_coreDist(Laik_Topology_Matrix* top, size_t node, size_t a_len, int* assigned)
 {  // maybe use https://stackoverflow.com/a/25689059
     uint64_t dist = 0;
     for (size_t i = 0; i < top->nodecount; i++)
-        if (i != node && bsearch(&i, assigned, top->nodecount, sizeof(size_t), cmpfunc) != NULL)
+        if (i != node && bsearch(&i, assigned, a_len, sizeof(size_t), top_func_findEqual) != NULL)
             dist += top_mat_elm(node, i, top);
     return dist;
 }
