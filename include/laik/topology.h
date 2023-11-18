@@ -37,15 +37,15 @@ typedef struct _Laik_CommMatrix {
     uint64_t*      matrix;
 } Laik_CommMatrix;
 
-typedef struct _Laik_Topology_Matrix {
+typedef struct _Laik_TopologyMatrix {
     Laik_Instance* inst;
     size_t         nodecount;
     uint64_t*      matrix;
-} Laik_Topology_Matrix;
+} Laik_TopologyMatrix;
 
-typedef struct _Laik_Topology_Graph {
+typedef struct _Laik_TopologyGraph {
     uint64_t size;
-} Laik_Topology_Graph;
+} Laik_TopologyGraph;
 
 enum _Laik_Topology_Which {
     LAIK_TOP_IS_MAT,
@@ -55,14 +55,14 @@ enum _Laik_Topology_Which {
 typedef struct _Laik_Topology {
     uint8_t which;
     union {
-        Laik_Topology_Matrix* mat;
-        Laik_Topology_Graph*  graph;
+        Laik_TopologyMatrix* mat;
+        Laik_TopologyGraph*  graph;
     } data;
 } Laik_Topology;
 
 enum _Laik_Reorder_Mapped {
     LAIK_RO_UNMAPPED = 0,
-    LAIK_RO_OFFSET = 1,
+    LAIK_RO_OFFSET   = 1,
 };
 
 typedef struct _Laik_Reordering_File {
@@ -70,10 +70,10 @@ typedef struct _Laik_Reordering_File {
     int      reordering[];  // use a VLA
 } __attribute__((packed)) Laik_Reordering_File;
 
-typedef struct _Laik_Topology_Indexed_Element {
-    size_t index;
+typedef struct _Laik_Topology_IndexedElement {
+    size_t   index;
     uint64_t val;
-} Laik_Topology_Indexed_Element;
+} Laik_Topology_IndexedElement;
 
 Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss);
 

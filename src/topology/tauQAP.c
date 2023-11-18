@@ -19,13 +19,13 @@
 #include <laik/topology.h>
 #include <sys/queue.h>
 
-int*     top_QAP_construction(Laik_CommMatrix*, Laik_Topology_Matrix*);
-int*     top_QAP_improvement(Laik_CommMatrix*, Laik_Topology_Matrix*);
-int*     top_QAP_cyclicSearch(Laik_CommMatrix*, Laik_Topology_Matrix*, int*);
+int*     top_QAP_construction(Laik_CommMatrix*, Laik_TopologyMatrix*);
+int*     top_QAP_improvement(Laik_CommMatrix*, Laik_TopologyMatrix*);
+int*     top_QAP_cyclicSearch(Laik_CommMatrix*, Laik_TopologyMatrix*, int*);
 int*     top_QAP_pairxchg(int*, size_t, size_t);
-uint64_t top_QAP_totalCost(Laik_CommMatrix*, Laik_Topology_Matrix*, int*);
+uint64_t top_QAP_totalCost(Laik_CommMatrix*, Laik_TopologyMatrix*, int*);
 uint64_t top_QAP_commLoad(Laik_CommMatrix*, size_t, size_t, int*);
-uint64_t top_QAP_coreDist(Laik_Topology_Matrix*, size_t, size_t, int*);
+uint64_t top_QAP_coreDist(Laik_TopologyMatrix*, size_t, size_t, int*);
 
 // optimize given pattern for topology using QAP
 // @param cm communication matrix @param top topology struct
@@ -38,33 +38,36 @@ int* laik_top_do_reorder_QAP(Laik_CommMatrix* cm, Laik_Topology* top)
 
 // do the QAP construction method
 // @returns heap pointer to reordering
-int* top_QAP_construction(Laik_CommMatrix* cm, Laik_Topology_Matrix* top)
+int* top_QAP_construction(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
 {
-    int* reordering = calloc(cm->nodecount, sizeof(int));
+    size_t n          = cm->nodecount;
+    int*   reordering = calloc(n, sizeof(int));
     if (!reordering) return NULL;
 
-    int* identity = calloc(cm->nodecount, sizeof(int));
+    int* identity = calloc(n, sizeof(int));
     if (!identity) return NULL;
-    for (size_t i = 0; i < cm->nodecount; i++) identity[i] = (int)i;
+    for (size_t i = 0; i < n; i++) identity[i] = (int)i;
 
     // save BOTH assigned and unassigned in one array:
-    // [.., (assigned), .., |, .., (unassigned), ..]
+    // [.., (assigned), .., | .., (unassigned), ..]
     // index keeps track of separator (== #assigned)
-    Laik_Topology_Indexed_Element* procs = calloc(cm->nodecount, sizeof(Laik_Topology_Indexed_Element));
-    Laik_Topology_Indexed_Element* cores = calloc(cm->nodecount, sizeof(Laik_Topology_Indexed_Element));
-    if (!loads || !dists) return NULL;
+    Laik_Topology_IndexedElement* procs = calloc(n, sizeof(Laik_Topology_IndexedElement));
+    Laik_Topology_IndexedElement* cores = calloc(n, sizeof(Laik_Topology_IndexedElement));
+    if (!procs || !cores) return NULL;
 
+    size_t   assigned_procs = 0, assigned_cores = 0;
     uint64_t maxload_index = 0, mindist_index = 0;
-    for (size_t i = 0; i < cm->nodecount; i++) {
+
+    for (size_t i = 0; i < n; i++) {
         uint64_t maxload = 0, mindist = -1;
-        uint64_t cur_load = top_QAP_commLoad(cm, i, cm->nodecount, identity);
-        uint64_t cur_dist = top_QAP_coreDist(top, i, cm->nodecount, identity);
+        uint64_t cur_load = top_QAP_commLoad(cm, i, n, identity);
+        uint64_t cur_dist = top_QAP_coreDist(top, i, n, identity);
         if (cur_load > maxload) {
-            maxload = cur_load;
+            maxload       = cur_load;
             maxload_index = i;
         }
         if (cur_dist < mindist) {
-            mindist = cur_dist;
+            mindist       = cur_dist;
             mindist_index = i;
         }
     }
@@ -75,11 +78,15 @@ int* top_QAP_construction(Laik_CommMatrix* cm, Laik_Topology_Matrix* top)
     // append: write to index and increment
     // always sort
 
+    free(identity);
+    free(procs);
+    free(cores);
+
     return reordering;
 }
 
 // do the QAP improvement runs
-int* top_QAP_improvement(Laik_CommMatrix* cm, Laik_Topology_Matrix* top)
+int* top_QAP_improvement(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
 {
     return top_QAP_cyclicSearch(cm, top, top_QAP_construction(cm, top));
 }
@@ -88,11 +95,11 @@ int* top_QAP_improvement(Laik_CommMatrix* cm, Laik_Topology_Matrix* top)
 // @param cm communication matrix @param top topology matrix
 // @param initial initial ordering
 // @returns initial, overwritten with best solution
-int* top_QAP_cyclicSearch(Laik_CommMatrix* cm, Laik_Topology_Matrix* top, int* initial)
+int* top_QAP_cyclicSearch(Laik_CommMatrix* cm, Laik_TopologyMatrix* top, int* initial)
 {
     const size_t n = cm->nodecount;
 
-    int*     best_sol = initial;
+    int*     best_sol  = initial;
     uint64_t best_cost = top_QAP_totalCost(cm, top, initial);
     int      current_sol[n];
     uint64_t current_cost = best_cost;
@@ -127,7 +134,7 @@ int* top_QAP_cyclicSearch(Laik_CommMatrix* cm, Laik_Topology_Matrix* top, int* i
 // exchange two list elements
 int* top_QAP_pairxchg(int* order, size_t i, size_t j)
 {
-    int tmp = order[i];
+    int tmp  = order[i];
     order[i] = order[j];
     order[j] = tmp;
 
@@ -135,7 +142,7 @@ int* top_QAP_pairxchg(int* order, size_t i, size_t j)
 }
 
 // get total weight for given reordering
-uint64_t top_QAP_totalCost(Laik_CommMatrix* cm, Laik_Topology_Matrix* top, int* order)
+uint64_t top_QAP_totalCost(Laik_CommMatrix* cm, Laik_TopologyMatrix* top, int* order)
 {
     uint64_t cost = 0;
     for (size_t i = 0; i < cm->nodecount; i++)
@@ -165,7 +172,7 @@ uint64_t top_QAP_commLoad(Laik_CommMatrix* mat, size_t process, size_t a_len, in
 
 // calculate total distance between node and already assigned nodes
 // ensure @param assigned is always sorted
-uint64_t top_QAP_coreDist(Laik_Topology_Matrix* top, size_t node, size_t a_len, int* assigned)
+uint64_t top_QAP_coreDist(Laik_TopologyMatrix* top, size_t node, size_t a_len, int* assigned)
 {  // maybe use https://stackoverflow.com/a/25689059
     uint64_t dist = 0;
     for (size_t i = 0; i < top->nodecount; i++)
