@@ -51,6 +51,7 @@ int* top_QAP_construction(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
     // save BOTH assigned and unassigned in one array:
     // [.., (assigned), .., | .., (unassigned), ..]
     // index keeps track of separator (== #assigned)
+    // subarrays always sorted
     Laik_Topology_IndexedElement* procs = calloc(n, sizeof(Laik_Topology_IndexedElement));
     Laik_Topology_IndexedElement* cores = calloc(n, sizeof(Laik_Topology_IndexedElement));
     if (!procs || !cores) return NULL;

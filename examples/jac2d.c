@@ -185,6 +185,7 @@ int main(int argc, char* argv[])
 
     // get comm stats for :197f.
     //   stats per data container or transition
+    //   use do_calc.. and go through transition
     // reorder here
 
     int iter = 0;
