@@ -41,7 +41,6 @@ static void laik_mpi_exec(Laik_ActionSeq* as);
 static void laik_mpi_updateGroup(Laik_Group*);
 static bool laik_mpi_log_action(Laik_Action* a);
 static void laik_mpi_sync(Laik_KVStore* kvs);
-static void laik_mpi_matsync(Laik_CommMatrix* cm);
 
 // C guarantees that unset function pointers are NULL
 static Laik_Backend laik_backend_mpi = {
@@ -53,7 +52,6 @@ static Laik_Backend laik_backend_mpi = {
     .updateGroup = laik_mpi_updateGroup,
     .log_action  = laik_mpi_log_action,
     .sync        = laik_mpi_sync,
-    .matsync     = laik_mpi_matsync,
 };
 
 static Laik_Instance* mpi_instance = 0;
@@ -1192,13 +1190,6 @@ static void laik_mpi_sync(Laik_KVStore* kvs)
 
     laik_kvs_changes_free(&recvd);
     laik_kvs_changes_free(&changes);
-}
-
-static void laik_mpi_matsync(Laik_CommMatrix* cm)
-{
-    // for now, just sync the entire matrix
-    // later only send updated entries
-    
 }
 
 #endif // USE_MPI
