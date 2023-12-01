@@ -5,7 +5,7 @@ OPT=-g
 -include ../Makefile.config
 
 EXAMPLES = min vsum vsum2 spmv spmv2 \
-    jac1d jac2d jac2d-ser jac3d \
+    jac1d jac2d jac2d-ser jac3d jac3d_comm \
     markov-ser markov markov2 \
     propagation1d propagation2d \
     resize vsum3 \
@@ -37,6 +37,8 @@ jac1d: jac1d.o $(LAIKLIB)
 jac2d: jac2d.o $(LAIKLIB)
 
 jac3d: jac3d.o $(LAIKLIB)
+
+jac3d_comm: jac3d_comm.o $(LAIKLIB)
 
 markov: markov.o $(LAIKLIB)
 
