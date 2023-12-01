@@ -10,7 +10,7 @@ SUBDIRS=examples
 
 LDFLAGS=$(OPT)
 IFLAGS=-I$(SDIR)include -I$(SDIR)src -I$(SDIR)src/topology -I.
-LDLIBS=-ldl
+LDLIBS=-ldl -lglib-2.0
 
 SRCS = $(wildcard $(SDIR)src/*.c)
 SRCS += $(wildcard $(SDIR)src/topology/*.c)
