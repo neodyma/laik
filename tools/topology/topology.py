@@ -154,6 +154,13 @@ def tauQAP(comm_mat, top_graph, hostnames) -> list:
 def optimize(optimizer, *args) -> list:
     return globals()[optimizer](*args)
 
+# reorder a communication matrix with given reordering
+# aka permute rows and colums
+def reorderMatrix(matrix, reordering):
+    npmat = np.array(matrix)
+    npmat[list(range(len(matrix))), :] = npmat[reordering, :]
+    npmat[:, list(range(len(matrix)))] = npmat[:, reordering]
+    return npmat
 
 # create artificial communication matrix with known ideal reordering
 def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> tuple:
@@ -182,6 +189,19 @@ def matchedReorderGroups(order1: list, order2: list, num_procs: int, procs_per_c
         set2.add(frozenset(list(chunk)))
     # set2 = frozenset(np.split(order1, len(order1) // procs_per_cluster))
     return True if len(set1.difference(set2)) == 0 else False
+
+
+# calculate communication between nodes with given communication matrix
+# assume fill up process assignment
+def measureOffNodeCommunication(matrix: list, num_procs: int, procs_per_node: int):
+    npmat = np.array(matrix)
+
+    blocks = [np.hsplit(col, len(matrix) // procs_per_node) for col in np.vsplit(npmat, len(matrix) // procs_per_node)]
+    merged = np.block([[np.sum(mat) for mat in list] for list in blocks])
+    # we don't care about intra node communication here
+    np.fill_diagonal(merged, 0)
+
+    return merged.sum()
 
 
 def parserSetup() -> argparse.ArgumentParser:
@@ -237,18 +257,31 @@ if __name__ == "__main__":
 
             np.set_printoptions(linewidth=168, edgeitems=4)
             print(np.array(comm_stats.commMatrix, dtype=int))
+            print(measureOffNodeCommunication(comm_stats.commMatrix, len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
 
             # tm = optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             # print("treeMatch: ", tm)
             # print(generate_LAIK_REORDERING(tm))
 
+            # tmmat = reorderMatrix(comm_stats.commMatrix, tm)
+            # print(np.array(tmmat, dtype=int))
+            # print(measureOffNodeCommunication(list(tmmat), len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
+
             qap = optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             print("tauQAP:    ", qap)
             print(generate_LAIK_REORDERING(qap))
 
-            # print(np.array(hostgraph.topMatrix, dtype=int))
+            qapmat = reorderMatrix(comm_stats.commMatrix, qap)
+            print(np.array(qapmat, dtype=int))
+            print(measureOffNodeCommunication(list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
 
-            # test_comms = generateGroupedComms(16, 2)
+            print(np.array(hostgraph.topMatrix, dtype=int))
+
+            # print("\n\n{}\n\n".format("#" * 80))
+# 
+            # test_comms = generateGroupedComms(8, 2)
+            # print(np.matrix(test_comms[0]))
+            # measureOffNodeCommunication(test_comms[0], 8, 2)
             # res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             # print(res)
             # print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))

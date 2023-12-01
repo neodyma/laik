@@ -37,6 +37,7 @@ class TauQAP:
         max_load = initial_loads.index(max(initial_loads))
         min_dist = initial_dists.index(min(initial_dists))
 
+        # the core with the lowest total distance receives the rank with highest comm load
         reordering[min_dist] = max_load
         unassigned_procs = list(range(len(self.hostnames)))
         unassigned_procs.remove(max_load)
@@ -46,8 +47,10 @@ class TauQAP:
         assigned_cores = [min_dist]
 
         for n in range(1, len(self.hostnames)):
+            # calculate all loads and dists for every still unassigned process
             loads = [self.calcCommLoad(proc, assigned_procs) for proc in unassigned_procs]
             dists = [self.calcCoreDist(core, assigned_cores) for core in unassigned_cores]
+            # get element from unassigned list which matches minmax load/dist
             max_load = unassigned_procs[loads.index(max(loads))]
             min_dist = unassigned_cores[dists.index(min(dists))]
             reordering[min_dist] = max_load
