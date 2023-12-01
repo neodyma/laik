@@ -75,18 +75,27 @@ typedef struct _Laik_Topology_IndexedElement {
     uint64_t val;
 } Laik_Topology_IndexedElement;
 
-Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss);
+enum _Laik_Topology_FindWhich {
+    LAIK_TOP_MIN,
+    LAIK_TOP_MAX,
+};
 
 Laik_CommMatrix* laik_top_CommMatrix_init(Laik_Instance* li);
 void             laik_top_CommMatrix_free(Laik_CommMatrix* cm);
 Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, size_t to, int64_t amt);
-void             laik_top_CommMatrix_sync(Laik_CommMatrix* cm);
+Laik_CommMatrix* laik_top_CommMatrix_reset(Laik_CommMatrix* cm);
 Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from, size_t to);
+Laik_CommMatrix* laik_top_CommMatrix_add_Transition(Laik_CommMatrix* cm, Laik_Transition* tr);
 
 int*        laik_top_reordering(Laik_Instance* li);
 int*        laik_top_reordering_get(Laik_Instance* li);
 Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase);
 int*        laik_top_do_reorder(Laik_CommMatrix* cm, Laik_Topology* top);
+
+Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li);
+
+Laik_Topology* laik_top_Topology_init(int which);
+void           laik_top_Topology_free();
 
 // =============================================================================
 // LAIK_TOPOLOGY tauQAP

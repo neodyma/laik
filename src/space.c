@@ -1627,6 +1627,8 @@ do_calc_transition(Laik_Space* space,
         laik_log_flush(0);
     }
 
+    laik_top_CommMatrix_add_Transition(t->group->comm_matrix, t);
+
     return t;
 }
 

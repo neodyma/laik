@@ -26,6 +26,7 @@ int*     top_QAP_pairxchg(int*, size_t, size_t);
 uint64_t top_QAP_totalCost(Laik_CommMatrix*, Laik_TopologyMatrix*, int*);
 uint64_t top_QAP_commLoad(Laik_CommMatrix*, size_t, size_t, int*);
 uint64_t top_QAP_coreDist(Laik_TopologyMatrix*, size_t, size_t, int*);
+int*     top_QAP_list_assign(int*, size_t, size_t*, size_t);
 
 // optimize given pattern for topology using QAP
 // @param cm communication matrix @param top topology struct
@@ -34,6 +35,24 @@ int* laik_top_do_reorder_QAP(Laik_CommMatrix* cm, Laik_Topology* top)
 {
     if (top->which != LAIK_TOP_IS_MAT) return NULL;
     return top_QAP_improvement(cm, top->data.mat);
+}
+
+// sort Laik_Top_IndexedElement
+int top_func_sortIndexed(const void* a, const void* b)
+{
+    const Laik_Topology_IndexedElement* a_ptr = a;
+    const Laik_Topology_IndexedElement* b_ptr = b;
+    return a_ptr->val - b_ptr->val;
+}
+
+Laik_Topology_IndexedElement top_QAP_findIndexed(Laik_Topology_IndexedElement* arr, const size_t len, const int minmax)
+{
+    Laik_Topology_IndexedElement* best = arr;
+    if (minmax == LAIK_TOP_MIN)
+        for (size_t i = 1; i < len; i++) best = ((arr+i)->val < best->val) ? (arr+i) : best;
+    else
+        for (size_t i = 1; i < len; i++) best = ((arr+i)->val > best->val) ? (arr+i) : best;
+    return *best;
 }
 
 // do the QAP construction method
@@ -52,9 +71,18 @@ int* top_QAP_construction(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
     // [.., (assigned), .., | .., (unassigned), ..]
     // index keeps track of separator (== #assigned)
     // subarrays always sorted
-    Laik_Topology_IndexedElement* procs = calloc(n, sizeof(Laik_Topology_IndexedElement));
-    Laik_Topology_IndexedElement* cores = calloc(n, sizeof(Laik_Topology_IndexedElement));
+    Laik_Topology_IndexedElement* loads = calloc(n, sizeof(Laik_Topology_IndexedElement));
+    Laik_Topology_IndexedElement* dists = calloc(n, sizeof(Laik_Topology_IndexedElement));
+    if (!loads || !dists) return NULL;
+
+    int* procs = calloc(n, sizeof(int));
+    int* cores = calloc(n, sizeof(int));
     if (!procs || !cores) return NULL;
+
+    for (size_t i = 0; i < n; i++) {
+        procs[i] = (int)i;
+        cores[i] = (int)i;
+    }
 
     size_t   assigned_procs = 0, assigned_cores = 0;
     uint64_t maxload_index = 0, mindist_index = 0;
@@ -74,10 +102,27 @@ int* top_QAP_construction(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
     }
 
     reordering[mindist_index] = maxload_index;
+    top_QAP_list_assign(procs, n, &assigned_procs, maxload_index);
+    top_QAP_list_assign(cores, n, &assigned_cores, mindist_index);
 
-    // simulate list with array and index to last element
-    // append: write to index and increment
-    // always sort
+    // construct the reorder map rank by rank
+    for (size_t i = 1; i < n; i++) {
+        size_t num_unassigned = n - assigned_procs;
+        for (size_t j = 0; j < num_unassigned; j++) {
+            loads[j].index = procs[assigned_procs + j];
+            loads[j].val   = top_QAP_commLoad(cm, procs[assigned_procs + j], assigned_procs, procs);
+            dists[j].index = cores[assigned_cores + j];
+            dists[j].val   = top_QAP_coreDist(top, cores[assigned_cores + j], assigned_cores, cores);
+        }
+            
+        Laik_Topology_IndexedElement maxload_elm = top_QAP_findIndexed(loads, num_unassigned, LAIK_TOP_MAX);
+        Laik_Topology_IndexedElement mindist_elm = top_QAP_findIndexed(dists, num_unassigned, LAIK_TOP_MIN);
+
+        // assign the matching and add processes to assigned list
+        reordering[mindist_elm.index] = maxload_elm.index;
+        top_QAP_list_assign(procs, n, &assigned_procs, maxload_elm.index);
+        top_QAP_list_assign(cores, n, &assigned_cores, mindist_elm.index);
+    }
 
     free(identity);
     free(procs);
@@ -180,4 +225,29 @@ uint64_t top_QAP_coreDist(Laik_TopologyMatrix* top, size_t node, size_t a_len, i
         if (i != node && bsearch(&i, assigned, a_len, sizeof(size_t), top_func_findEqual) != NULL)
             dist += top_mat_elm(node, i, top);
     return dist;
+}
+
+int top_func_sort(const void* a, const void* b)
+{
+    const int* a_ptr = a;
+    const int* b_ptr = b;
+    return *a_ptr - *b_ptr;
+}
+
+// move an element from unassigned to assigned part of the virtual list
+// [.., (assigned), .., | .., (unassigned), ..]
+// and update separator accordingly
+// @param list list @param sep separator @param elm element to move
+// @returns head of sorted lists
+int* top_QAP_list_assign(int* list, size_t len, size_t* sep, size_t elm)
+{
+    int* where = bsearch(&elm, list + *sep, len - *sep, sizeof(int), top_func_sort);
+    // element is already assigned
+    if (where < list + *sep) return list;
+
+    top_QAP_pairxchg(list, (*sep)++, (where - list));
+    qsort(list, *sep, sizeof(int), top_func_sort);
+    qsort(list + *sep, len - *sep, sizeof(int), top_func_sort);
+
+    return list;
 }

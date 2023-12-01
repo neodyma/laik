@@ -290,13 +290,6 @@ void laik_aseq_addRBufSend(Laik_ActionSeq* as, int round,
     Laik_A_RBufSend* a;
     a = (Laik_A_RBufSend*) laik_aseq_addAction(as, sizeof(*a),
                                                LAIK_AT_RBufSend, round, 0);
-
-    Laik_TransitionContext* tc = as->context[0];
-    Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
-
-    laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), to, count * tc->data->elemsize);
-
-
     a->bufID = bufID;
     a->offset = byteOffset;
     a->count = count;
@@ -388,11 +381,6 @@ void laik_aseq_addMapSend(Laik_ActionSeq* as, int round,
 {
     Laik_BackendAction* a = laik_aseq_addBAction(as, round);
 
-    Laik_TransitionContext* tc = as->context[0];
-    Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
-
-    laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), to, count * tc->data->elemsize);
-
     a->h.type = LAIK_AT_MapSend;
     a->fromMapNo = fromMapNo;
     a->offset = off;
@@ -407,11 +395,6 @@ void laik_aseq_addBufSend(Laik_ActionSeq* as, int round,
     Laik_A_BufSend* a;
     a = (Laik_A_BufSend*) laik_aseq_addAction(as, sizeof(*a),
                                               LAIK_AT_BufSend, round, 0);
-
-    Laik_TransitionContext* tc = as->context[0];
-    Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
-
-    laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), to, count * tc->data->elemsize);
 
     a->buf = fromBuf;
     a->count = count;
@@ -2471,33 +2454,7 @@ int laik_aseq_calc_stats(Laik_ActionSeq* as)
     Laik_Action* a = as->action;
     for(unsigned int i = 0; i < as->actionCount; i++, a = nextAction(a)) {
         assert(a->tid == current_tid); // TODO: only assumes actions from one transition
-        Laik_CommMatrix* cm = laik_world(as->inst)->comm_matrix;
-
-        // update commMatrix
-        switch(a->type) {
-            case LAIK_AT_MapSend: {
-                printf("MAPSEND!!!!\n");
-                Laik_BackendAction* ba = (Laik_BackendAction*) a;
-                laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), ba->rank, ba->count * tc->data->elemsize);
-                break;
-            }
-            case LAIK_AT_BufSend: {
-                printf("BUFSEND!!!!\n");
-
-                Laik_A_BufSend* aa = (Laik_A_BufSend*) a;
-                laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), aa->to_rank, aa->count * tc->data->elemsize);
-                break;
-            }
-            case LAIK_AT_RBufSend: {
-                printf("RBUFSEND!!!!\n");
-
-                Laik_A_RBufSend* aa = (Laik_A_RBufSend*) a;
-                laik_top_CommMatrix_update(cm, laik_myid(laik_world(as->inst)), aa->to_rank, aa->count * tc->data->elemsize);
-                break;
-            }
-            default: break;
-        }
-
+ 
         switch(a->type) {
         case LAIK_AT_TExec:
             break;

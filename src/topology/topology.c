@@ -19,22 +19,17 @@
 #include <laik-internal.h>
 #include <laik/topology.h>
 
-// generate a CommMatrix from SwitchStat information
-Laik_CommMatrix* laik_top_CommMatrix_from_SwitchStat(Laik_SwitchStat* ss) {}
-
 // allocate a new CommMatrix
 Laik_CommMatrix* laik_top_CommMatrix_init(Laik_Instance* li)
 {
     Laik_CommMatrix* cm = calloc(1, sizeof(Laik_CommMatrix));
 
-    if (!cm)
-        laik_panic("Out of memory allocating CommMatrix object");
+    if (!cm) laik_panic("Out of memory allocating CommMatrix object");
 
     size_t nodecount = li->locations;
     cm->matrix       = calloc((nodecount * nodecount), sizeof(*cm->matrix));
 
-    if (!cm->matrix)
-        laik_panic("Out of memory allocating CommMatrix matrix");
+    if (!cm->matrix) laik_panic("Out of memory allocating CommMatrix matrix");
 
     cm->nodecount = nodecount;
     cm->inst      = li;
@@ -56,15 +51,12 @@ Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, si
     return cm;
 }
 
-void laik_top_CommMatrix_sync(Laik_CommMatrix* cm)
+// zero out given matrix
+Laik_CommMatrix* laik_top_CommMatrix_reset(Laik_CommMatrix* cm)
 {
-    const Laik_Backend* b = cm->inst->backend;
-    if (!b || !b->matsync)
-        laik_panic("backend or matrix sync unavailable");
+    memset(cm->matrix, 0, cm->nodecount * sizeof(uint64_t));
 
-    // cm->in_sync = true;
-    (b->matsync)(cm);
-    // cm->in_sync = false;
+    return cm;
 }
 
 // swap two nodes of the CM
@@ -77,79 +69,79 @@ Laik_CommMatrix* laik_top_CommMatrix_swapnodes(Laik_CommMatrix* cm, size_t from,
     return cm;
 }
 
+// generate CommMatrix from Transition object
+// TODO: for now work on external matrix
+Laik_CommMatrix* laik_top_CommMatrix_add_Transition(Laik_CommMatrix* cm, Laik_Transition* tr)
+{
+    // Laik_CommMatrix* cm = laik_top_CommMatrix_init(tr->group->inst);
+
+    // from -> to
+    for (int i = 0; i < tr->sendCount; i++)
+        laik_top_CommMatrix_update(cm, laik_myid(tr->group), tr->send[i].toTask, laik_range_size(&(tr->send[i].range)));
+
+    return cm;
+}
+
 // get reordered indices or NULL if no reordering is set
 int* laik_top_reordering(Laik_Instance* li)
-{ // this really should return u64*.. but locationid is int so we use that
-    if (li->locationmap)
-        return li->locationmap;
+{  // this really should return u64*.. but locationid is int so we use that
+    if (li->locationmap) return li->locationmap;
 
     char* reorderfile = getenv("LAIK_REORDER_FILE");
     char* reorderstr  = getenv("LAIK_REORDERING");
-    if (!reorderfile && !reorderstr) // no reordering set
+    if (!reorderfile && !reorderstr)  // no reordering set
         return NULL;
 
     // parse the env string and set reorderings
-    if (reorderstr) { // e.g. LAIK_REORDERING=2.3,0.4,5.1
+    if (reorderstr) {  // e.g. LAIK_REORDERING=2.3,0.4,5.1
         // TODO reverse lookup if not set?
         // e.g. 5 -> 1 but 1 is not mapped to another rank
         // in this case we should do a bidirectional map
         // idea, always map bidirectional except when already set?
         const size_t sz = li->locations * sizeof(int);
         li->locationmap = calloc(sz, 1);
-        if (!li->locationmap)
-            laik_panic("Reordering map could not be allocated!");
+        if (!li->locationmap) laik_panic("Reordering map could not be allocated!");
 
         char *kv, *save;
         laik_log(2, "Creating reorder map");
         // TODO: strtoul error handling
         while ((kv = strtok_r(reorderstr, ".", &save)) && !(reorderstr = NULL)) {
-            if (!kv)
-                break;
+            if (!kv) break;
             size_t k = strtoul(kv, NULL, 0);
 
             kv = strtok_r(reorderstr, ",", &save);
-            if (!kv)
-                break;
+            if (!kv) break;
             int v = strtol(kv, NULL, 0);
 
-            if ((int)k >= li->locations)
-                continue;
+            if ((int)k >= li->locations) continue;
 
             li->locationmap[k] = v + LAIK_RO_OFFSET;
             // laik_log(2, "rank %lu -> rank %d\n", k, v);
         }
 
-        if (reorderfile && (li->mylocationid == 0)) { // both envs set -> dump reordering to file
+        if (reorderfile && (li->mylocationid == 0)) {  // both envs set -> dump reordering to file
             FILE* file = fopen(reorderfile, "wb");
             laik_log(2, "writing map to file %s\n", reorderfile);
-            if (!file)
-                laik_panic("Reordering file could not be opened!");
+            if (!file) laik_panic("Reordering file could not be opened!");
 
-            if (fwrite(li->locationmap, 1, sz, file) != sz)
-                laik_panic("Error writing to reordering file!");
+            if (fwrite(li->locationmap, 1, sz, file) != sz) laik_panic("Error writing to reordering file!");
 
             fclose(file);
         }
     }
-    else if (reorderfile) { // TODO: actually read and error detect
+    else if (reorderfile) {  // TODO: actually read and error detect
         FILE* file = fopen(reorderfile, "rb");
-        if (!file)
-            laik_panic("Reordering file could not be opened!");
+        if (!file) laik_panic("Reordering file could not be opened!");
 
         struct stat filestat;
-        if (fstat(fileno(file), &filestat))
-            laik_panic("Reordering file stats could not be loaded!");
+        if (fstat(fileno(file), &filestat)) laik_panic("Reordering file stats could not be loaded!");
 
-        if (!S_ISREG(filestat.st_mode) || filestat.st_size <= 0)
-            laik_panic("Invalid reordering file!");
+        if (!S_ISREG(filestat.st_mode) || filestat.st_size <= 0) laik_panic("Invalid reordering file!");
     }
     return li->locationmap;
 }
 
-int* laik_top_reordering_get(Laik_Instance* li)
-{
-    return li->locationmap;
-}
+int* laik_top_reordering_get(Laik_Instance* li) { return li->locationmap; }
 
 Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase)
 {
@@ -170,4 +162,27 @@ Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase)
     // to do: data movement with partitioning?
 
     return li->world;
+}
+
+// generate the topology for running on SuperMUC-NG
+Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li)
+{
+    // check if hostname conforms to iXXrXXcXXsXX
+    char* loc = laik_mylocation(li);
+    if (loc[0] != 'i' || loc[3] != 'r' || loc[6] != 'c' || loc[9] != 's') return NULL;
+
+    Laik_Topology* top = laik_top_Topology_init(LAIK_TOP_IS_MAT);
+    laik_sync_location(li); // hostnames in li->location
+
+    uint64_t weights[] = {1, 4, 0, 0, 15};
+
+    // count number of differences and iteratively add weights from index
+    
+
+    return top;
+}
+
+Laik_Topology* laik_top_Topology_init(int which)
+{
+    if (which != LAIK_TOP_IS_MAT || which != LAIK_TOP_IS_GRAPH) return NULL;
 }

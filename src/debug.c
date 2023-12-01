@@ -769,7 +769,7 @@ void laik_log_Checksum(char* buf, int count, Laik_Type* t)
 void laik_log_CommMatrix(Laik_CommMatrix* cm)
 {
     // char str[4096] = { '\0' };
-
+    laik_log_begin(2);
     laik_log_append("Communication Matrix:\n   ");
     for(size_t i = 0; i < cm->nodecount; i++)
         laik_log_append("| %10d%s", i, (i == cm->nodecount - 1 ? "\n" : " "));
@@ -780,6 +780,7 @@ void laik_log_CommMatrix(Laik_CommMatrix* cm)
             laik_log_append(" %10lu %s", top_mat_elm(i, j, cm), (j == cm->nodecount - 1 ? "\n" : " "));
         }
     }
+    laik_log_flush(NULL);
 }
 
 // logging helpers not just appending
