@@ -154,6 +154,7 @@ def tauQAP(comm_mat, top_graph, hostnames) -> list:
 def optimize(optimizer, *args) -> list:
     return globals()[optimizer](*args)
 
+
 # reorder a communication matrix with given reordering
 # aka permute rows and colums
 def reorderMatrix(matrix, reordering):
@@ -161,6 +162,7 @@ def reorderMatrix(matrix, reordering):
     npmat[list(range(len(matrix))), :] = npmat[reordering, :]
     npmat[:, list(range(len(matrix)))] = npmat[:, reordering]
     return npmat
+
 
 # create artificial communication matrix with known ideal reordering
 def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> tuple:
@@ -179,6 +181,21 @@ def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> tuple:
 
     # create clusters with high-communicating processes corresponding to procs_per_cpu
     # e.g. num_procs=8, procs_per_cpu=2 -> pairs of communicating processes that should get mapped to same cpu
+
+
+# generate all to all matrix with given symmetry factor
+# e.g. symm=1 -> fully symmetric all to all
+def generateAlltoAll(num_procs: int, symmetry: int, median: int) -> list:
+    if symmetry < median / 20:
+        synth_matrix = np.full((num_procs, num_procs), median, dtype=int)
+        np.fill_diagonal(synth_matrix, 0)
+        return list(synth_matrix)
+
+    synth_matrix = np.random.randint(median - symmetry, median + 1, size=(num_procs, num_procs))
+    synth_matrix = np.tril(synth_matrix) + np.tril(synth_matrix, -1).T
+    np.fill_diagonal(synth_matrix, 0)
+
+    return list(synth_matrix)
 
 
 def matchedReorderGroups(order1: list, order2: list, num_procs: int, procs_per_cluster: int):
@@ -202,6 +219,14 @@ def measureOffNodeCommunication(matrix: list, num_procs: int, procs_per_node: in
     np.fill_diagonal(merged, 0)
 
     return merged.sum()
+
+
+def printMatrixAsTex(matrix: list) -> None:
+    for line in matrix:
+        for element in line:
+            print(str(element) + " & ", end="")
+        print("\b\b\\\\")
+    return
 
 
 def parserSetup() -> argparse.ArgumentParser:
@@ -256,8 +281,18 @@ if __name__ == "__main__":
             )
 
             np.set_printoptions(linewidth=168, edgeitems=4)
-            print(np.array(comm_stats.commMatrix, dtype=int))
-            print(measureOffNodeCommunication(comm_stats.commMatrix, len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
+            # print(np.array(comm_stats.commMatrix, dtype=int))
+            print(
+                "total communication load: ",
+                np.format_float_scientific(
+                    measureOffNodeCommunication(
+                        comm_stats.commMatrix,
+                        len(comm_stats.hostnames),
+                        len(hostgraph.layers[-1]) // len(hostgraph.layers[-2]),
+                    ),
+                    precision=2,
+                ),
+            )
 
             # tm = optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             # print("treeMatch: ", tm)
@@ -267,26 +302,36 @@ if __name__ == "__main__":
             # print(np.array(tmmat, dtype=int))
             # print(measureOffNodeCommunication(list(tmmat), len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
 
-            qap = optimize("tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-            print("tauQAP:    ", qap)
-            print(generate_LAIK_REORDERING(qap))
+            qap = optimize(
+                "tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))
+            )
+            # print("tauQAP:    ", qap)
+            # print(generate_LAIK_REORDERING(qap))
 
             qapmat = reorderMatrix(comm_stats.commMatrix, qap)
-            print(np.array(qapmat, dtype=int))
-            print(measureOffNodeCommunication(list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
+            # print(np.array(qapmat, dtype=int))
+            print(
+                "total communication load: ",
+                np.format_float_scientific(
+                    measureOffNodeCommunication(
+                        list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
+                    ),
+                    precision=2,
+                ),
+            )
 
-            print(np.array(hostgraph.topMatrix, dtype=int))
+            # print(np.array(hostgraph.topMatrix, dtype=int))
 
             # print("\n\n{}\n\n".format("#" * 80))
-# 
-            # test_comms = generateGroupedComms(8, 2)
-            # print(np.matrix(test_comms[0]))
-            # measureOffNodeCommunication(test_comms[0], 8, 2)
-            # res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-            # print(res)
-            # print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+    #
+    # test_comms = generateGroupedComms(8, 2)
+    # print(np.matrix(test_comms[0]))
+    # measureOffNodeCommunication(test_comms[0], 8, 2)
+    # res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+    # print(res)
+    # print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
 
-            # print(matchedReorderGroups(res, test_comms[1], 16, 2))
+    # print(matchedReorderGroups(res, test_comms[1], 16, 2))
 
     # we have an input matrix and topology, optimize and output reordering
     elif args.cg is not None and args.tg is not None:
