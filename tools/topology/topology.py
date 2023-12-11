@@ -7,9 +7,15 @@ from treematch import TreeMatch
 from qap import TauQAP
 import igraph
 import itertools
+import more_itertools
 import math
 import numpy as np
 import re
+
+# import matplotlib as mpl
+# mpl.use('pgf')
+import matplotlib.pyplot as plt
+import tikzplotlib as tpl
 
 
 # LAIK_LOG_FILE -> commGraph, commMatrix, hostnames
@@ -177,25 +183,33 @@ def generateGroupedComms(num_procs: int, procs_per_cluster: int) -> tuple:
             for n2 in chunk:
                 if n1 != n2:
                     synth_matrix[n1][n2] = comm_weight
-    return synth_matrix, ideal_order
-
-    # create clusters with high-communicating processes corresponding to procs_per_cpu
-    # e.g. num_procs=8, procs_per_cpu=2 -> pairs of communicating processes that should get mapped to same cpu
+    return np.array(synth_matrix, dtype=int), ideal_order
 
 
-# generate all to all matrix with given symmetry factor
-# e.g. symm=1 -> fully symmetric all to all
-def generateAlltoAll(num_procs: int, symmetry: int, median: int) -> list:
-    if symmetry < median / 20:
-        synth_matrix = np.full((num_procs, num_procs), median, dtype=int)
+# generate a host matrix with given clusters
+def generateHostMatrix(num_procs: int, procs_per_node: int):
+    max_weight = 10  # inter-node
+    min_weight = 2  # intra-node
+    matrix = np.full((num_procs, num_procs), max_weight)
+    blocks = more_itertools.chunked(range(0, num_procs), procs_per_node)
+    for block in blocks:
+        matrix[np.ix_(block, block)] = min_weight
+    np.fill_diagonal(matrix, 0)
+    return matrix
+
+
+# generate all to all matrix with distribution below max
+def generateAlltoAll(num_procs: int, symmetry: int, max: int):
+    if symmetry < max / 20:
+        synth_matrix = np.full((num_procs, num_procs), max, dtype=int)
         np.fill_diagonal(synth_matrix, 0)
-        return list(synth_matrix)
+        return synth_matrix
 
-    synth_matrix = np.random.randint(median - symmetry, median + 1, size=(num_procs, num_procs))
+    synth_matrix = np.random.randint(max - symmetry, max + 1, size=(num_procs, num_procs))
     synth_matrix = np.tril(synth_matrix) + np.tril(synth_matrix, -1).T
     np.fill_diagonal(synth_matrix, 0)
 
-    return list(synth_matrix)
+    return synth_matrix
 
 
 def matchedReorderGroups(order1: list, order2: list, num_procs: int, procs_per_cluster: int):
@@ -229,6 +243,57 @@ def printMatrixAsTex(matrix: list) -> None:
     return
 
 
+# generate a plot for given benchmark
+# we need: comm matrix, range of group sizes
+# print matrix and reordering to file
+# output plot file
+# then calculate reordering and volume for every group size
+# then add point to (bar)plot
+def generateTikzPlot(name, path, num_procs: int, procs_per_node: list):
+    # plt. ...
+    # path including trailing /
+
+    comm = generateAlltoAll(num_procs, 950, 1000)
+    np.savetxt(path + name + "_" + str(num_procs) + ".txt", np.array(comm, dtype=int), fmt="%s")
+
+    # with open(path + name + "_" + str(num_procs) + "_matrix.txt", "a") as matrixfile:
+        # matrixfile.write(str(initial_order) + "\n")
+
+    # fig, (ax0, ax1) = plt.subplots(ncols=2, sharex=True, sharey=True)
+
+    nrvolumes = []
+    rovolumes = []
+
+    # add data points (groupsz, comm volume) for (re)ordered
+    # we need a host graph generator for every group size
+    for groupsz in procs_per_node:
+        topo = generateHostMatrix(num_procs, groupsz)
+        # comm = generateGroupedComms(len(initial_matrix), groupsz)[0]
+        nrvolumes.append(measureOffNodeCommunication(list(comm), num_procs, groupsz))
+        reordering = optimize("tauQAP", list(comm), HostGraph(igraph.Graph(), list(topo), [], []), range(num_procs))
+        print(reordering)
+        rocomm = reorderMatrix(comm, reordering)
+        rovolumes.append(measureOffNodeCommunication(list(rocomm), num_procs, groupsz))
+
+    print(nrvolumes)
+    print(rovolumes)
+
+    plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
+
+    # plt.title("Symmetric All-to-All Communication")
+    plt.xlabel("Group Size / Cores")
+    plt.ylabel("Inter-Node Comm. / Elements")
+
+    plt.bar(np.array(procs_per_node) - 0.25, nrvolumes, color='#0065bd', width=0.5, label="No Reordering")
+    plt.bar(np.array(procs_per_node) + 0.25, rovolumes, color='red', width=0.5, label="Reordered")
+    plt.legend()
+    # plt.show()
+
+    tpl.save(path + name + "_" + str(num_procs) + "qap.tex")
+
+    return
+
+
 def parserSetup() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="LAIK topology optimizer",
@@ -238,7 +303,8 @@ def parserSetup() -> argparse.ArgumentParser:
     parser.add_argument("-c", "--cg", help="Communication graph")
     parser.add_argument("-t", "--tg", help="Topology graph")
     parser.add_argument("-o", "--out", help="Output matrix file")
-    parser.add_argument("-r", help=f"Reorder using ansatz [treeMatch, ..]")
+    parser.add_argument("-r", help=f"Reorder using ansatz [treeMatch, qap, ...]")
+    parser.add_argument("-g", "--generate", help="generate tikz")
     return parser
 
 
@@ -282,17 +348,25 @@ if __name__ == "__main__":
 
             np.set_printoptions(linewidth=168, edgeitems=4)
             # print(np.array(comm_stats.commMatrix, dtype=int))
-            print(
-                "total communication load: ",
-                np.format_float_scientific(
-                    measureOffNodeCommunication(
-                        comm_stats.commMatrix,
-                        len(comm_stats.hostnames),
-                        len(hostgraph.layers[-1]) // len(hostgraph.layers[-2]),
-                    ),
-                    precision=2,
-                ),
-            )
+            # print(
+            #     "total communication load: ",
+            #     np.format_float_scientific(
+            #         measureOffNodeCommunication(
+            #             comm_stats.commMatrix,
+            #             len(comm_stats.hostnames),
+            #             len(hostgraph.layers[-1]) // len(hostgraph.layers[-2]),
+            #         ),
+            #         precision=2,
+            #     ),
+            # )
+
+            # gc = generateGroupedComms(16,4)
+            # hm = generateHostMatrix(16,4)
+
+            # print(gc[0])
+            # print(hm)
+            # print(gc[1])
+            # print(optimize("tauQAP", gc[0], HostGraph(igraph.Graph(), list(hm), [], []), range(16)))
 
             # tm = optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             # print("treeMatch: ", tm)
@@ -302,23 +376,25 @@ if __name__ == "__main__":
             # print(np.array(tmmat, dtype=int))
             # print(measureOffNodeCommunication(list(tmmat), len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
 
-            qap = optimize(
-                "tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))
-            )
+            # qap = optimize(
+            # "tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))
+            # )
             # print("tauQAP:    ", qap)
             # print(generate_LAIK_REORDERING(qap))
 
-            qapmat = reorderMatrix(comm_stats.commMatrix, qap)
+            # qapmat = reorderMatrix(comm_stats.commMatrix, qap)
             # print(np.array(qapmat, dtype=int))
-            print(
-                "total communication load: ",
-                np.format_float_scientific(
-                    measureOffNodeCommunication(
-                        list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
-                    ),
-                    precision=2,
-                ),
-            )
+            # print(
+            # "total communication load: ",
+            # np.format_float_scientific(
+            # measureOffNodeCommunication(
+            # list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
+            # ),
+            # precision=2,
+            # ),
+            # )
+
+            generateTikzPlot("alltoall950", "/mnt/d/ma/figures/eval/", 64, [2**x for x in range(6)])
 
             # print(np.array(hostgraph.topMatrix, dtype=int))
 

@@ -60,7 +60,7 @@ class TauQAP:
             unassigned_cores.remove(min_dist)
             assigned_cores.append(min_dist)
 
-        print("QAP Construction: ", reordering)
+        # print("QAP Construction: ", reordering)
         return reordering
 
     # iteratively improve initial reordering (identity)

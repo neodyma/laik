@@ -46,6 +46,7 @@ void laik_top_CommMatrix_free(Laik_CommMatrix* cm)
 // add a new transfer to the CM
 Laik_CommMatrix* laik_top_CommMatrix_update(Laik_CommMatrix* cm, size_t from, size_t to, int64_t amt)
 {
+    // we could add a factor here to weigh certain paths
     top_mat_elm(from, to, cm) += amt;
     // top_mat_elm(to, from, cm) += amt;
     return cm;
@@ -177,12 +178,12 @@ Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li)
     uint64_t weights[] = {1, 4, 0, 0, 15};
 
     // count number of differences and iteratively add weights from index
-    
+
 
     return top;
 }
 
 Laik_Topology* laik_top_Topology_init(int which)
 {
-    if (which != LAIK_TOP_IS_MAT || which != LAIK_TOP_IS_GRAPH) return NULL;
+    if (which != LAIK_TOP_IS_MAT && which != LAIK_TOP_IS_GRAPH) return NULL;
 }

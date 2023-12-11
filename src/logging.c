@@ -288,7 +288,7 @@ void log_flush()
 
 // for now, just increase line length to support matrices
 // in the future we need a more robust way to do this
-#define LINE_LEN 2000
+#define LINE_LEN 10000
     // enough for prefix plus one line of log message
     static char buf2[150 + LINE_LEN];
     int off1 = 0, off, off2;

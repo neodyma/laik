@@ -783,6 +783,26 @@ void laik_log_CommMatrix(Laik_CommMatrix* cm)
     laik_log_flush(NULL);
 }
 
+void laik_print_CommMatrix_to_file(Laik_CommMatrix* cm)
+{
+    if (laik_myid(laik_world(cm->inst)) != 0) return;
+
+    char* filename = getenv("LAIK_TOP_MATRIX_FILE");
+
+    FILE* matrixfile = fopen(filename, "w");
+    if (!matrixfile) return;
+
+    if (!fprintf(matrixfile, "%lu\n", cm->nodecount))
+        return;
+
+    for (size_t i = 0; i < cm->nodecount; i++)
+        for (size_t j = 0; j < cm->nodecount; j++)
+            if(!fprintf(matrixfile, " %10lu %s", top_mat_elm(i, j, cm), (j == cm->nodecount - 1 ? "\n" : " ")))
+                return;
+
+    fclose(matrixfile);
+}
+
 // logging helpers not just appending
 
 // write action sequence at level 1 if <changed> is true, prepend with title

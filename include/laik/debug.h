@@ -42,6 +42,7 @@ void laik_log_Action(Laik_Action* a, Laik_ActionSeq* as);
 void laik_log_ActionSeq(Laik_ActionSeq* as, bool showActions);
 void laik_log_Checksum(char* buf, int count, Laik_Type* t);
 void laik_log_CommMatrix(Laik_CommMatrix* cm);
+void laik_print_CommMatrix_to_file(Laik_CommMatrix* cm);
 
 // write action sequence at level 1 if <changed> is true, prepend with title
 void laik_log_ActionSeqIfChanged(bool changed, Laik_ActionSeq* as, char* title);

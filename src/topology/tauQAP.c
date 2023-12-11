@@ -157,6 +157,7 @@ int* top_QAP_cyclicSearch(Laik_CommMatrix* cm, Laik_TopologyMatrix* top, int* in
         current_cost = top_QAP_totalCost(cm, top, current_sol);
         if (current_cost < best_cost) {
             // always have the current best solution in memory for early exit
+            // todo mutex read access to this
             memcpy(best_sol, current_sol, n * sizeof(int));
             best_cost = current_cost;
         }

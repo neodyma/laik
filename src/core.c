@@ -188,6 +188,7 @@ void laik_finalize(Laik_Instance* inst)
     }
 
     laik_log_CommMatrix(laik_world(inst)->comm_matrix);
+    // laik_print_CommMatrix_to_file(laik_world(inst)->comm_matrix);
 
     laik_close_profiling_file(inst);
     laik_free_profiling(inst);
