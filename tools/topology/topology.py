@@ -13,9 +13,11 @@ import numpy as np
 import re
 
 import matplotlib as mpl
+
 # mpl.use('pgf')
 import matplotlib.pyplot as plt
-import tikzplotlib as tpl
+# this needs some in-module modifications with some matplotlib versions!
+# import tikzplotlib as tpl
 
 
 # LAIK_LOG_FILE -> commGraph, commMatrix, hostnames
@@ -107,7 +109,7 @@ def generateHostTopology(hostnames: list[str]) -> HostGraph:
     # intra node: set to 1
     # inter node, on island: full omnipath
     # intra island: 3.75:1 compared to intra island
-    weights = [.5, 5, 0, 0, 15]
+    weights = [0.5, 5, 0, 0, 15]
     topGraph.add_edges(node_edges, dict(weight=[weights[0] for _ in range(len(node_edges))]))
     topGraph.add_edges(srvs_edges, dict(weight=[weights[1] for _ in range(len(srvs_edges))]))
     topGraph.add_edges(cabs_edges, dict(weight=[weights[2] for _ in range(len(cabs_edges))]))
@@ -218,7 +220,6 @@ def matchedReorderGroups(order1: list, order2: list, num_procs: int, procs_per_c
         set1.add(frozenset(list(chunk)))
     for chunk in np.array_split(order2, len(order2) // procs_per_cluster):
         set2.add(frozenset(list(chunk)))
-    # set2 = frozenset(np.split(order1, len(order1) // procs_per_cluster))
     return True if len(set1.difference(set2)) == 0 else False
 
 
@@ -229,9 +230,8 @@ def measureOffNodeCommunication(matrix: list, num_procs: int, procs_per_node: in
 
     blocks = [np.hsplit(col, len(matrix) // procs_per_node) for col in np.vsplit(npmat, len(matrix) // procs_per_node)]
     merged = np.block([[np.sum(mat) for mat in list] for list in blocks])
-    # we don't care about intra node communication here
+    # we don't care about intra-node communication here
     np.fill_diagonal(merged, 0)
-
     return merged.sum()
 
 
@@ -262,8 +262,8 @@ def generateTikzPlot(name, path, comm, num_procs: int, procs_per_node: list):
     npcomm = np.array(comm)
     heatmap = np.ma.masked_where(npcomm < 1, npcomm)
     cmap = mpl.cm.get_cmap("hot")
-    cmap.set_bad('white')
-    plt.imshow(heatmap, cmap=cmap, interpolation='nearest')
+    cmap.set_bad("white")
+    plt.imshow(heatmap, cmap=cmap, interpolation="nearest")
     # plt.imsave(path + name + "_heatmap" + str(num_procs) + "qap.png", heatmap, cmap=cmap)
     tpl.save(path + name + "_heatmap" + str(num_procs) + "qap.tex")
     plt.clf()
@@ -279,12 +279,12 @@ def generateTikzPlot(name, path, comm, num_procs: int, procs_per_node: list):
         rocomm = reorderMatrix(comm, reordering)
         heatmap = np.ma.masked_where(rocomm < 1, rocomm)
         cmap = mpl.cm.get_cmap("hot")
-        cmap.set_bad('white')
-        plt.imshow(heatmap, cmap=cmap, interpolation='nearest')
+        cmap.set_bad("white")
+        plt.imshow(heatmap, cmap=cmap, interpolation="nearest")
         tpl.save(path + name + "_heatmap" + str(num_procs) + "ro" + str(groupsz) + "qap.tex")
         plt.clf()
         # np.savetxt(
-            # path + name + "_" + str(num_procs) + "ro" + str(groupsz) + ".txt", np.array(rocomm, dtype=int), fmt="%10s"
+        # path + name + "_" + str(num_procs) + "ro" + str(groupsz) + ".txt", np.array(rocomm, dtype=int), fmt="%10s"
         # )
         rovolumes.append(measureOffNodeCommunication(list(rocomm), num_procs, groupsz))
 
@@ -313,11 +313,11 @@ def parserSetup() -> argparse.ArgumentParser:
         description="Parse communication metadata, create structured representations, optimize communication paths and generate reordering parameters.",
     )
     parser.add_argument("-i", "--ilog", nargs="+", help="Input LAIK_LOG_FILEs")
-    parser.add_argument("-c", "--cg", help="Communication graph")
-    parser.add_argument("-t", "--tg", help="Topology graph")
     parser.add_argument("-o", "--out", help="Output matrix file")
-    parser.add_argument("-r", help=f"Reorder using ansatz [treeMatch, qap, ...]")
+    parser.add_argument("-r", help="Reorder using ansatz [treeMatch, qap, ...]")
     parser.add_argument("-g", "--generate", help="generate tikz")
+    parser.add_argument("--treematch", help="Use treeMatch optimizer")
+    parser.add_argument("--qap", help="Use QAP optimizer")
     return parser
 
 
@@ -330,9 +330,6 @@ if __name__ == "__main__":
         comm_stats = parseCommStats(args.ilog)
         if args.out is not None:
             np.savetxt(args.out, np.array(comm_stats.commMatrix, dtype=int), "%10d")
-        if args.cg is not None:
-            # dump to file
-            exit(1)
         else:
             igraph.plot(
                 comm_stats.commGraph,
@@ -340,9 +337,6 @@ if __name__ == "__main__":
                 edge_label=[edge for edge in comm_stats.commGraph.es["weight"]],
                 vertex_label=[x for x in range(len(comm_stats.commGraph.vs))],
             )
-
-            # for line in cg.commMatrix:
-            # print(line)
 
             hostgraph = generateHostTopology(list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             hostgraphlayout = hostgraph.graph.layout_reingold_tilford(mode="in", root=hostgraph.layers[0])
@@ -359,106 +353,14 @@ if __name__ == "__main__":
                 vertex_label_angle=math.pi / 4,
             )
 
-            np.set_printoptions(linewidth=168, edgeitems=4)
+        np.set_printoptions(linewidth=168, edgeitems=4)
 
-            # generateTikzPlot("alltoall", "/mnt/d/ma/figures/eval/", [], 64, [2**x for x in range(6)])
+        # example with generated communication matrix
+    gc = generateGroupedComms(64, 4)
+    topo = generateHostMatrix(64, 4)
 
-            # gc = generateGroupedComms(64,32)
+    qap = optimize("tauQAP", gc[0], HostGraph(igraph.Graph(), list(topo), [], []), range(64))
+    print(generate_LAIK_REORDERING(qap))
 
-            generateTikzPlot(
-                "lulesh", "/mnt/d/ma/chapters/appendix/matrices/", comm_stats.commMatrix, 64, [2**x for x in range(6)]
-            )
-
-            # topo = generateHostMatrix(64, 4)
-
-            # for line in topo:
-            #     for elm in line:
-            #         print(str(elm) + ", ", end='\b')
-            #     print()
-
-            # print(np.array(comm_stats.commMatrix, dtype=int))
-            # print(
-            #     "total communication load: ",
-            #     np.format_float_scientific(
-            #         measureOffNodeCommunication(
-            #             comm_stats.commMatrix,
-            #             len(comm_stats.hostnames),
-            #             len(hostgraph.layers[-1]) // len(hostgraph.layers[-2]),
-            #         ),
-            #         precision=2,
-            #     ),
-            # )
-
-            # gc = generateAlltoAll(8,0,4000)
-            # hm = generateHostMatrix(64,2)
-
-            # print(gc[0])
-
-            # print(gc[0])
-            # print(hm)
-            # print(gc[1])
-            # print(optimize("treeMatch", gc, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-            # print(optimize("tauQAP", gc, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-
-            # tm = optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-            # print("treeMatch: ", tm)
-            # # print(generate_LAIK_REORDERING(tm))
-
-            # tmmat = reorderMatrix(comm_stats.commMatrix, tm)
-            # # print(np.array(tmmat, dtype=int))
-            # print(
-            #     "total communication load: ",
-            #     np.format_float_scientific(
-            #         measureOffNodeCommunication(
-            #             list(tmmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
-            #         ),
-            #         precision=2,
-            #     ),
-            # )
-
-            # qap = optimize(
-            #     "tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))
-            # )
-            # print("tauQAP:    ", qap)
-            # # print(generate_LAIK_REORDERING(qap))
-
-            # qapmat = reorderMatrix(comm_stats.commMatrix, qap)
-            # print(np.array(qapmat, dtype=int))
-            # print(
-            #     "total communication load: ",
-            #     np.format_float_scientific(
-            #         measureOffNodeCommunication(
-            #             list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
-            #         ),
-            #         precision=2,
-            #     ),
-            # )
-
-
-            # QAP brute force
-            # solver = TauQAP(comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-            # print(solver.solve())
-
-            # min_cost = 10 ** 15
-            # for perm in itertools.permutations(range(len(comm_stats.hostnames))):
-            #     cost = solver.totalCost(perm)
-            #     if cost < min_cost:
-            #         min_cost = cost 
-            #         print(min_cost)
-
-            # print(np.array(hostgraph.topMatrix, dtype=int))
-
-            # print("\n\n{}\n\n".format("#" * 80))
-    #
-    # test_comms = generateGroupedComms(8, 2)
-    # print(np.matrix(test_comms[0]))
-    # measureOffNodeCommunication(test_comms[0], 8, 2)
-    # res = optimize("tauQAP", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
-    # print(res)
-    # print(optimize("treeMatch", test_comms[0], hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
-
-    # print(matchedReorderGroups(res, test_comms[1], 16, 2))
-
-    # we have an input matrix and topology, optimize and output reordering
-    elif args.cg is not None and args.tg is not None:
-        exit(1)
+    print("Best reordering:", gc[1])
+    print("Nodes match? ", matchedReorderGroups(gc[1], qap, 64, 4))
