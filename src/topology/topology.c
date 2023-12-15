@@ -96,7 +96,7 @@ int* laik_top_reordering(Laik_Instance* li)
     char* reorderfile = getenv("LAIK_REORDER_FILE");
     char* reorderstr  = getenv("LAIK_REORDERING");
     if (!reorderfile && !reorderstr)  // no reordering set
-        return NULL;
+        return laik_top_do_reorder(laik_world(li)->comm_matrix, laik_top_Topology_from_sng(li));
 
     // parse the env string and set reorderings
     if (reorderstr) {  // e.g. LAIK_REORDERING=2.3,0.4,5.1
@@ -143,6 +143,8 @@ int* laik_top_reordering(Laik_Instance* li)
         if (fstat(fileno(file), &filestat)) laik_panic("Reordering file stats could not be loaded!");
 
         if (!S_ISREG(filestat.st_mode) || filestat.st_size <= 0) laik_panic("Invalid reordering file!");
+
+        // ...
     }
     return li->locationmap;
 }
@@ -175,6 +177,15 @@ Laik_Group* laik_allow_reordering(Laik_Instance* li)
     return li->world;
 }
 
+// return index of first differing char
+size_t strcmp_index(const char* a, const char* b)
+{
+    size_t index = 0;
+    for (; index < strlen(a) && index < strlen(b); index++)
+        if (a[index] != b[index]) break;
+    return index;
+}
+
 // generate the topology for running on SuperMUC-NG
 Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li)
 {
@@ -185,10 +196,52 @@ Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li)
     Laik_Topology* top = laik_top_Topology_init(li, LAIK_TOP_IS_MAT);
     laik_sync_location(li);  // hostnames in li->location
 
-    uint64_t weights[] = {1, 4, 0, 0, 15};
+    // uint64_t             weights[]     = {1, 4, 0, 0, 15};
+    // int                  myloc         = li->mylocationid;
+    uint64_t             hop_weights[] = {2, 10, 10, 10, 40};
+    Laik_TopologyMatrix* mat           = top->data.mat;
 
-    // count number of differences and iteratively add weights from index
-    //
+    // local matrix
+    // for (size_t i = 0; i < li->locations; i++) {
+    //     if (i == myloc) continue;
+    //     uint64_t weight = 0;
+    //     // weight = total sum of weights across hops
+    //     if (strcmp_index(li->mylocation, li->location[i]) < 3)
+    //         weight = hop_weights[4];
+    //     else if (strcmp_index(li->mylocation, li->location[i]) < 6)
+    //         weight = hop_weights[3];
+    //     else if (strcmp_index(li->mylocation, li->location[i]) < 9)
+    //         weight = hop_weights[2];
+    //     else if (strcmp_index(li->mylocation, li->location[i]) < 12)
+    //         weight = hop_weights[1];
+    //     else if (strcmp_index(li->mylocation, li->location[i]) == 12)
+    //         weight = hop_weights[0];
+
+    //     top_mat_elm(i, myloc, mat) = weight;
+    //     top_mat_elm(myloc, i, mat) = weight;
+    // }
+
+    // global matrix
+    for (size_t i = 0; i < (size_t)li->locations; i++) {
+        for (size_t j = i; j < (size_t)li->locations; j++) {
+            if (i == j) continue;
+            uint64_t weight = 0;
+
+            if (strcmp_index(li->location[i], li->location[j]) < 3)
+                weight = hop_weights[4];
+            else if (strcmp_index(li->location[i], li->location[j]) < 6)
+                weight = hop_weights[3];
+            else if (strcmp_index(li->location[i], li->location[j]) < 9)
+                weight = hop_weights[2];
+            else if (strcmp_index(li->location[i], li->location[j]) < 12)
+                weight = hop_weights[1];
+            else if (strcmp_index(li->location[i], li->location[j]) == 12)
+                weight = hop_weights[0];
+
+            top_mat_elm(i, j, mat) = weight;
+            top_mat_elm(j, i, mat) = weight;
+        }
+    }
 
     return top;
 }
@@ -237,3 +290,5 @@ Laik_TopologyMatrix* laik_top_Topology_TopopologyMatrix_init(Laik_Instance* li)
 
     return topmat;
 }
+
+int* laik_top_do_reorder(Laik_CommMatrix* cm, Laik_Topology* top) { return laik_top_do_reorder_QAP(cm, top); }
