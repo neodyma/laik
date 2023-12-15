@@ -20,6 +20,9 @@
 #include <laik/topology.h>
 
 // allocate a new CommMatrix
+// alternative for a global matrix:
+// - each process stores own outgoing communication list in a kvs
+// - matrix is then represented by all kvs entries combined
 Laik_CommMatrix* laik_top_CommMatrix_init(Laik_Instance* li)
 {
     Laik_CommMatrix* cm = calloc(1, sizeof(Laik_CommMatrix));
