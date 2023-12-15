@@ -49,9 +49,9 @@ Laik_Topology_IndexedElement top_QAP_findIndexed(Laik_Topology_IndexedElement* a
 {
     Laik_Topology_IndexedElement* best = arr;
     if (minmax == LAIK_TOP_MIN)
-        for (size_t i = 1; i < len; i++) best = ((arr+i)->val < best->val) ? (arr+i) : best;
+        for (size_t i = 1; i < len; i++) best = ((arr + i)->val < best->val) ? (arr + i) : best;
     else
-        for (size_t i = 1; i < len; i++) best = ((arr+i)->val > best->val) ? (arr+i) : best;
+        for (size_t i = 1; i < len; i++) best = ((arr + i)->val > best->val) ? (arr + i) : best;
     return *best;
 }
 
@@ -59,8 +59,9 @@ Laik_Topology_IndexedElement top_QAP_findIndexed(Laik_Topology_IndexedElement* a
 // @returns heap pointer to reordering
 int* top_QAP_construction(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
 {
-    size_t n          = cm->nodecount;
-    int*   reordering = calloc(n, sizeof(int));
+    size_t n = cm->nodecount;
+
+    int* reordering = calloc(n, sizeof(int));
     if (!reordering) return NULL;
 
     int* identity = calloc(n, sizeof(int));
@@ -114,7 +115,7 @@ int* top_QAP_construction(Laik_CommMatrix* cm, Laik_TopologyMatrix* top)
             dists[j].index = cores[assigned_cores + j];
             dists[j].val   = top_QAP_coreDist(top, cores[assigned_cores + j], assigned_cores, cores);
         }
-            
+
         Laik_Topology_IndexedElement maxload_elm = top_QAP_findIndexed(loads, num_unassigned, LAIK_TOP_MAX);
         Laik_Topology_IndexedElement mindist_elm = top_QAP_findIndexed(dists, num_unassigned, LAIK_TOP_MIN);
 

@@ -117,7 +117,7 @@ Laik_Instance* laik_init(int* argc, char*** argv)
         }
     }
 
-    laik_allow_reordering(inst, 0);
+    laik_allow_reordering(inst);
 
     // Laik_Group* g = laik_clone_group(inst->world);
     // laik_set_world(inst, g);
@@ -201,11 +201,6 @@ void laik_finalize(Laik_Instance* inst)
 // TODO hook this for reordering
 int laik_mylocationid(Laik_Instance* i)
 {
-    // this seems very inefficient, maybe just add reorder as instance member
-    // int* reordering = laik_top_reordering(i);
-    // if (reordering)
-        // return reordering[i->mylocationid];
-    // else
     return i->mylocationid;
 }
 
@@ -339,7 +334,9 @@ Laik_Group* laik_create_group(Laik_Instance* i, int maxsize)
     g->rc_others = 0;
     g->rc_ownprocess = 0;
 
-    g->comm_matrix = laik_top_CommMatrix_init(i);
+    // for now, keep old matrix
+    Laik_CommMatrix* oldmat = laik_world(i)->comm_matrix;
+    g->comm_matrix = oldmat ? oldmat : laik_top_CommMatrix_init(i);
 
     i->group_count++;
     return g;

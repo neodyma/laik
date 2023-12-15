@@ -53,7 +53,7 @@ enum _Laik_Topology_Which {
 };
 
 typedef struct _Laik_Topology {
-    uint8_t which;
+    int which;
     union {
         Laik_TopologyMatrix* mat;
         Laik_TopologyGraph*  graph;
@@ -89,13 +89,16 @@ Laik_CommMatrix* laik_top_CommMatrix_add_Transition(Laik_CommMatrix* cm, Laik_Tr
 
 int*        laik_top_reordering(Laik_Instance* li);
 int*        laik_top_reordering_get(Laik_Instance* li);
-Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase);
+Laik_Group* laik_allow_reordering(Laik_Instance* li);
 int*        laik_top_do_reorder(Laik_CommMatrix* cm, Laik_Topology* top);
 
 Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li);
+Laik_Topology* laik_top_Topology_generic(Laik_Instance* li);
 
-Laik_Topology* laik_top_Topology_init(int which);
-void           laik_top_Topology_free();
+Laik_Topology* laik_top_Topology_init(Laik_Instance* li, int which);
+void           laik_top_Topology_free(Laik_Topology* top);
+
+Laik_TopologyMatrix* laik_top_Topology_TopopologyMatrix_init(Laik_Instance* li);
 
 // =============================================================================
 // LAIK_TOPOLOGY tauQAP

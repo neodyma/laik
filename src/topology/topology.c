@@ -80,6 +80,11 @@ Laik_CommMatrix* laik_top_CommMatrix_add_Transition(Laik_CommMatrix* cm, Laik_Tr
     for (int i = 0; i < tr->sendCount; i++)
         laik_top_CommMatrix_update(cm, laik_myid(tr->group), tr->send[i].toTask, laik_range_size(&(tr->send[i].range)));
 
+    // find all targets for reduction
+
+    // for (int i = 0; i < tr->redCount; i++)
+    // laik_top_CommMatrix_update(cm, laik_myid(tr->group), tr->red[i]);
+
     return cm;
 }
 
@@ -144,23 +149,28 @@ int* laik_top_reordering(Laik_Instance* li)
 
 int* laik_top_reordering_get(Laik_Instance* li) { return li->locationmap; }
 
-Laik_Group* laik_allow_reordering(Laik_Instance* li, int phase)
+// allow LAIK to reorder processes
+Laik_Group* laik_allow_reordering(Laik_Instance* li)
 {
-    // check if reordering is wanted
-    // if not return initial group
-    Laik_Group* g = laik_clone_group(li->world);
-    laik_set_world(li, g);
+    if ((laik_epoch(li) | laik_phase(li)) == 0) {
+        // initial reordering
+        Laik_Group* g = laik_clone_group(li->world);
+        laik_set_world(li, g);
 
-    // phase 0
-    int* reordermap = laik_top_reordering(li);
-    if (reordermap && (reordermap[li->mylocationid] != LAIK_RO_UNMAPPED)) {
-        laik_log(2, "%s: mylocation %3d mapped to %3d", li->mylocation, g->myid, reordermap[g->myid] - LAIK_RO_OFFSET);
-        g->myid = reordermap[g->myid] - LAIK_RO_OFFSET;
+        // either use LAIK_REORDERING or calculate on the fly
+        int* reordermap = laik_top_reordering(li);
+        if (reordermap && (reordermap[li->mylocationid] != LAIK_RO_UNMAPPED)) {
+            int newid = reordermap[g->myid] - LAIK_RO_OFFSET;
+            laik_log(2, "%s: mylocation %3d mapped to %3d", li->mylocation, g->myid, newid);
+            g->myid = newid;
+        }
+
+        // propagate to backend
+        li->backend->updateGroup(li->world);
     }
-
-    li->backend->updateGroup(li->world);
-
-    // to do: data movement with partitioning?
+    else {
+        // reordering after init, needs data movement
+    }
 
     return li->world;
 }
@@ -170,20 +180,60 @@ Laik_Topology* laik_top_Topology_from_sng(Laik_Instance* li)
 {
     // check if hostname conforms to iXXrXXcXXsXX
     char* loc = laik_mylocation(li);
-    if (loc[0] != 'i' || loc[3] != 'r' || loc[6] != 'c' || loc[9] != 's') return NULL;
+    if (strlen(loc) < 10 || loc[0] != 'i' || loc[3] != 'r' || loc[6] != 'c' || loc[9] != 's') return NULL;
 
-    Laik_Topology* top = laik_top_Topology_init(LAIK_TOP_IS_MAT);
-    laik_sync_location(li); // hostnames in li->location
+    Laik_Topology* top = laik_top_Topology_init(li, LAIK_TOP_IS_MAT);
+    laik_sync_location(li);  // hostnames in li->location
 
     uint64_t weights[] = {1, 4, 0, 0, 15};
 
     // count number of differences and iteratively add weights from index
-
+    //
 
     return top;
 }
 
-Laik_Topology* laik_top_Topology_init(int which)
+Laik_Topology* laik_top_Topology_init(Laik_Instance* li, int which)
 {
-    if (which != LAIK_TOP_IS_MAT && which != LAIK_TOP_IS_GRAPH) return NULL;
+    // only matrices for now
+    // if (which != LAIK_TOP_IS_MAT && which != LAIK_TOP_IS_GRAPH) return NULL;
+    Laik_Topology* top = NULL;
+    if (which == LAIK_TOP_IS_MAT) {
+        top = calloc(sizeof(Laik_Topology), 1);
+        if (!top) return NULL;
+
+        // TODO: change this to TopologyMatrix_init
+        top->data.mat = laik_top_Topology_TopopologyMatrix_init(li);
+        if (!top->data.mat) return NULL;
+
+        top->which = LAIK_TOP_IS_MAT;
+    }
+
+    return top;
+}
+
+void laik_top_Topology_free(Laik_Topology* top)
+{
+    if (top->which == LAIK_TOP_IS_MAT) {
+        free(top->data.mat->matrix);
+        free(top->data.mat);
+    }
+    else
+        free(top->data.graph);
+}
+
+Laik_TopologyMatrix* laik_top_Topology_TopopologyMatrix_init(Laik_Instance* li)
+{
+    Laik_TopologyMatrix* topmat = calloc(sizeof(Laik_TopologyMatrix), 1);
+    if (!topmat) return NULL;
+
+    topmat->inst      = li;
+    topmat->nodecount = li->locations;
+    topmat->matrix    = calloc(sizeof(uint64_t), topmat->nodecount * topmat->nodecount);
+    if (!topmat->matrix) {
+        free(topmat);
+        return NULL;
+    }
+
+    return topmat;
 }
