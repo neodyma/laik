@@ -10,7 +10,6 @@ class TauQAP:
         self.comm_mat = comm_mat
         self.top_graph = top_graph
         self.hostnames = hostnames
-        print("QAP set up")
 
     def __str__(self) -> str:
         return (
@@ -34,10 +33,15 @@ class TauQAP:
         initial_loads = [self.calcCommLoad(x, list(range(len(self.hostnames)))) for x in range(len(self.hostnames))]
         initial_dists = [self.calcCoreDist(x, list(range(len(self.hostnames)))) for x in range(len(self.hostnames))]
 
+        # print("initial process loads:  ", initial_loads)
+        # print("initial core distances: ", initial_dists)
+
         max_load = initial_loads.index(max(initial_loads))
         min_dist = initial_dists.index(min(initial_dists))
 
         # the core with the lowest total distance receives the rank with highest comm load
+        # print("assigned {} to {}".format(max_load, min_dist))
+
         reordering[min_dist] = max_load
         unassigned_procs = list(range(len(self.hostnames)))
         unassigned_procs.remove(max_load)
@@ -48,25 +52,39 @@ class TauQAP:
 
         for n in range(1, len(self.hostnames)):
             # calculate all loads and dists for every still unassigned process
+            # print("unassigned procs for n {}: ".format(n), unassigned_procs)
+            # print("unassigned cores for n {}: ".format(n), unassigned_cores)
+
             loads = [self.calcCommLoad(proc, assigned_procs) for proc in unassigned_procs]
             dists = [self.calcCoreDist(core, assigned_cores) for core in unassigned_cores]
+
+            # print("loads for n {}: loads, assigned".format(n), loads, assigned_procs)
+            # print("dists for n {}: dists, assigned".format(n), dists, assigned_cores)
+            # print("index of max load: ", loads[::-1].index(max(loads)), "-> proc", unassigned_procs[loads.index(max(loads))])
+            # print("index of min dist: ", dists[::-1].index(min(dists)), "-> core", unassigned_cores[dists.index(min(dists))])
+
+
             # get element from unassigned list which matches minmax load/dist
             max_load = unassigned_procs[loads.index(max(loads))]
             min_dist = unassigned_cores[dists.index(min(dists))]
+            # print(max_load, min_dist)            
             reordering[min_dist] = max_load
+            # print("assigned {} to {}".format(max_load, min_dist))
 
             unassigned_procs.remove(max_load)
             assigned_procs.append(max_load)
             unassigned_cores.remove(min_dist)
             assigned_cores.append(min_dist)
 
-        # print("QAP Construction: ", reordering)
+        # print("QAP Construction: ", reordering, self.totalCost(reordering))
         return reordering
 
     # iteratively improve initial reordering (identity)
     def doImprovementMethod(self):
         # return self.cyclicSearch(list(range(len(self.hostnames))))[0]
-        return self.cyclicSearch(self.doConstructionMethod())[0]
+        res = self.cyclicSearch(self.doConstructionMethod())
+        # print("total QAP cost: ", res[1])
+        return res[0]
 
     # calculate total communication load between process and already assigned processes
     # initial process: treat every process as assigned
@@ -90,11 +108,14 @@ class TauQAP:
         return dist
 
     def cyclicSearch(self, initial: Iterable):
+        # if self.totalCost(initial) > self.totalCost(range(len(self.hostnames))):
+            # best_sol, best_cost = list(range(len(self.hostnames))), self.totalCost(range(len(self.hostnames)))
+        # else:
         best_sol, best_cost = initial, self.totalCost(initial)
         current_sol, current_cost = best_sol, best_cost
 
         i, j, n = 0, 1, len(self.hostnames)
-        for k in range(n ** 2): # for i, for j
+        for _ in range(n ** 2): # for i, for j
             current_sol = self.pairExchange(best_sol, i, j)
             current_cost = self.totalCost(current_sol)
             if current_cost < best_cost:

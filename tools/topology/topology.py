@@ -12,7 +12,7 @@ import math
 import numpy as np
 import re
 
-# import matplotlib as mpl
+import matplotlib as mpl
 # mpl.use('pgf')
 import matplotlib.pyplot as plt
 import tikzplotlib as tpl
@@ -26,7 +26,7 @@ def parseCommStats(logfiles: list) -> CommStats:
     str_backend = "MPI backend initialized"
     R_BE = re.compile(r"MPI backend initialized \(at (.+), rank (\d+)/(\d+)\).*$")
     # == LAIK-(0000)-L(03) (0006).(01)  (0):(00).(004) | (Communication Matrix:) (\n)
-    R_EX = re.compile(r".+LAIK-(\d+)-L(\d+) (\d+).(\d+)  (\d+):(\d+).(\d+) \| (.+)")
+    R_EX = re.compile(r".+LAIK-(\d+)-L(\d+) (\d+).(\d+)\s+(\d+):(\d+).(\d+) \| (.+)")
 
     ranks = 0
     matrices = []
@@ -107,7 +107,7 @@ def generateHostTopology(hostnames: list[str]) -> HostGraph:
     # intra node: set to 1
     # inter node, on island: full omnipath
     # intra island: 3.75:1 compared to intra island
-    weights = [1, 4, 0, 0, 15]
+    weights = [.5, 5, 0, 0, 15]
     topGraph.add_edges(node_edges, dict(weight=[weights[0] for _ in range(len(node_edges))]))
     topGraph.add_edges(srvs_edges, dict(weight=[weights[1] for _ in range(len(srvs_edges))]))
     topGraph.add_edges(cabs_edges, dict(weight=[weights[2] for _ in range(len(cabs_edges))]))
@@ -249,47 +249,60 @@ def printMatrixAsTex(matrix: list) -> None:
 # output plot file
 # then calculate reordering and volume for every group size
 # then add point to (bar)plot
-def generateTikzPlot(name, path, num_procs: int, procs_per_node: list):
+def generateTikzPlot(name, path, comm, num_procs: int, procs_per_node: list):
     # plt. ...
     # path including trailing /
+    if len(comm) == 0:
+        bias = 990
+        comm = generateAlltoAll(num_procs, bias, 1000)
+        np.savetxt(path + name + str(bias) + "_" + str(num_procs) + ".txt", np.array(comm, dtype=int), fmt="%s")
 
-    comm = generateAlltoAll(num_procs, 950, 1000)
-    np.savetxt(path + name + "_" + str(num_procs) + ".txt", np.array(comm, dtype=int), fmt="%s")
+    # np.savetxt(path + name + "_" + str(num_procs) + ".txt", np.array(comm, dtype=int), fmt="%s")
 
-    # with open(path + name + "_" + str(num_procs) + "_matrix.txt", "a") as matrixfile:
-        # matrixfile.write(str(initial_order) + "\n")
-
-    # fig, (ax0, ax1) = plt.subplots(ncols=2, sharex=True, sharey=True)
+    npcomm = np.array(comm)
+    heatmap = np.ma.masked_where(npcomm < 1, npcomm)
+    cmap = mpl.cm.get_cmap("hot")
+    cmap.set_bad('white')
+    plt.imshow(heatmap, cmap=cmap, interpolation='nearest')
+    # plt.imsave(path + name + "_heatmap" + str(num_procs) + "qap.png", heatmap, cmap=cmap)
+    tpl.save(path + name + "_heatmap" + str(num_procs) + "qap.tex")
+    plt.clf()
 
     nrvolumes = []
     rovolumes = []
 
-    # add data points (groupsz, comm volume) for (re)ordered
-    # we need a host graph generator for every group size
     for groupsz in procs_per_node:
         topo = generateHostMatrix(num_procs, groupsz)
-        # comm = generateGroupedComms(len(initial_matrix), groupsz)[0]
         nrvolumes.append(measureOffNodeCommunication(list(comm), num_procs, groupsz))
         reordering = optimize("tauQAP", list(comm), HostGraph(igraph.Graph(), list(topo), [], []), range(num_procs))
-        print(reordering)
+        # print(reordering)
         rocomm = reorderMatrix(comm, reordering)
+        heatmap = np.ma.masked_where(rocomm < 1, rocomm)
+        cmap = mpl.cm.get_cmap("hot")
+        cmap.set_bad('white')
+        plt.imshow(heatmap, cmap=cmap, interpolation='nearest')
+        tpl.save(path + name + "_heatmap" + str(num_procs) + "ro" + str(groupsz) + "qap.tex")
+        plt.clf()
+        # np.savetxt(
+            # path + name + "_" + str(num_procs) + "ro" + str(groupsz) + ".txt", np.array(rocomm, dtype=int), fmt="%10s"
+        # )
         rovolumes.append(measureOffNodeCommunication(list(rocomm), num_procs, groupsz))
 
     print(nrvolumes)
     print(rovolumes)
 
-    plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
+    # plt.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
 
-    # plt.title("Symmetric All-to-All Communication")
-    plt.xlabel("Group Size / Cores")
-    plt.ylabel("Inter-Node Comm. / Elements")
+    # plt.xlabel("Group Size / Cores")
+    # plt.ylabel("Inter-Node Comm. / Elements")
 
-    plt.bar(np.array(procs_per_node) - 0.25, nrvolumes, color='#0065bd', width=0.5, label="No Reordering")
-    plt.bar(np.array(procs_per_node) + 0.25, rovolumes, color='red', width=0.5, label="Reordered")
-    plt.legend()
+    # plt.bar(np.array(procs_per_node) - 0.25, nrvolumes, color="#0065bd", width=0.5, label="No Reordering")
+    # plt.bar(np.array(procs_per_node) + 0.25, rovolumes, color="#a2ad00", width=0.5, label="Reordered")
+    # plt.legend()
     # plt.show()
+    # tpl.save(path + name + "_heatmap" + str(num_procs) + "qap.tex")
 
-    tpl.save(path + name + "_" + str(num_procs) + "qap.tex")
+    plt.clf()
 
     return
 
@@ -347,6 +360,22 @@ if __name__ == "__main__":
             )
 
             np.set_printoptions(linewidth=168, edgeitems=4)
+
+            # generateTikzPlot("alltoall", "/mnt/d/ma/figures/eval/", [], 64, [2**x for x in range(6)])
+
+            # gc = generateGroupedComms(64,32)
+
+            generateTikzPlot(
+                "lulesh", "/mnt/d/ma/chapters/appendix/matrices/", comm_stats.commMatrix, 64, [2**x for x in range(6)]
+            )
+
+            # topo = generateHostMatrix(64, 4)
+
+            # for line in topo:
+            #     for elm in line:
+            #         print(str(elm) + ", ", end='\b')
+            #     print()
+
             # print(np.array(comm_stats.commMatrix, dtype=int))
             # print(
             #     "total communication load: ",
@@ -360,41 +389,62 @@ if __name__ == "__main__":
             #     ),
             # )
 
-            # gc = generateGroupedComms(16,4)
-            # hm = generateHostMatrix(16,4)
+            # gc = generateAlltoAll(8,0,4000)
+            # hm = generateHostMatrix(64,2)
+
+            # print(gc[0])
 
             # print(gc[0])
             # print(hm)
             # print(gc[1])
-            # print(optimize("tauQAP", gc[0], HostGraph(igraph.Graph(), list(hm), [], []), range(16)))
+            # print(optimize("treeMatch", gc, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
+            # print(optimize("tauQAP", gc, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))))
 
             # tm = optimize("treeMatch", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
             # print("treeMatch: ", tm)
-            # print(generate_LAIK_REORDERING(tm))
+            # # print(generate_LAIK_REORDERING(tm))
 
             # tmmat = reorderMatrix(comm_stats.commMatrix, tm)
-            # print(np.array(tmmat, dtype=int))
-            # print(measureOffNodeCommunication(list(tmmat), len(comm_stats.hostnames), len(hostgraph.layers[-1])//len(hostgraph.layers[-2])))
+            # # print(np.array(tmmat, dtype=int))
+            # print(
+            #     "total communication load: ",
+            #     np.format_float_scientific(
+            #         measureOffNodeCommunication(
+            #             list(tmmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
+            #         ),
+            #         precision=2,
+            #     ),
+            # )
 
             # qap = optimize(
-            # "tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))
+            #     "tauQAP", comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames))
             # )
             # print("tauQAP:    ", qap)
-            # print(generate_LAIK_REORDERING(qap))
+            # # print(generate_LAIK_REORDERING(qap))
 
             # qapmat = reorderMatrix(comm_stats.commMatrix, qap)
             # print(np.array(qapmat, dtype=int))
             # print(
-            # "total communication load: ",
-            # np.format_float_scientific(
-            # measureOffNodeCommunication(
-            # list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
-            # ),
-            # precision=2,
-            # ),
+            #     "total communication load: ",
+            #     np.format_float_scientific(
+            #         measureOffNodeCommunication(
+            #             list(qapmat), len(comm_stats.hostnames), len(hostgraph.layers[-1]) // len(hostgraph.layers[-2])
+            #         ),
+            #         precision=2,
+            #     ),
             # )
 
-            generateTikzPlot("alltoall950", "/mnt/d/ma/figures/eval/", 64, [2**x for x in range(6)])
+
+            # QAP brute force
+            # solver = TauQAP(comm_stats.commMatrix, hostgraph, list(map(lambda s: s.strip("'"), comm_stats.hostnames)))
+            # print(solver.solve())
+
+            # min_cost = 10 ** 15
+            # for perm in itertools.permutations(range(len(comm_stats.hostnames))):
+            #     cost = solver.totalCost(perm)
+            #     if cost < min_cost:
+            #         min_cost = cost 
+            #         print(min_cost)
 
             # print(np.array(hostgraph.topMatrix, dtype=int))
 

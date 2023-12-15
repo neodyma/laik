@@ -96,7 +96,13 @@ int* laik_top_reordering(Laik_Instance* li)
     char* reorderfile = getenv("LAIK_REORDER_FILE");
     char* reorderstr  = getenv("LAIK_REORDERING");
     if (!reorderfile && !reorderstr)  // no reordering set
-        return laik_top_do_reorder(laik_world(li)->comm_matrix, laik_top_Topology_from_sng(li));
+        return NULL;
+
+    char* reorderdyn = getenv("LAIK_REORDER_LIVE");
+    if (reorderdyn) {
+        li->locationmap = laik_top_do_reorder(laik_world(li)->comm_matrix, laik_top_Topology_from_sng(li));
+        return li->locationmap;
+    }
 
     // parse the env string and set reorderings
     if (reorderstr) {  // e.g. LAIK_REORDERING=2.3,0.4,5.1
@@ -291,4 +297,8 @@ Laik_TopologyMatrix* laik_top_Topology_TopopologyMatrix_init(Laik_Instance* li)
     return topmat;
 }
 
-int* laik_top_do_reorder(Laik_CommMatrix* cm, Laik_Topology* top) { return laik_top_do_reorder_QAP(cm, top); }
+int* laik_top_do_reorder(Laik_CommMatrix* cm, Laik_Topology* top)
+{
+    if (!cm || !top) return NULL;
+    return laik_top_do_reorder_QAP(cm, top);
+}
